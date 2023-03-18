@@ -1,8 +1,8 @@
 #include "server.hpp"
-#include "debug.hpp"
-#include "assert.hpp"
+#include "util/debug.hpp"
+#include "util/assert.hpp"
 #include "util/egl/egl_extensions.hpp"
-#include "egl/create_shared_egl_context.hpp"
+#include "util/egl/create_shared_egl_context.hpp"
 #include <unistd.h>
 #include <sys/eventfd.h>
 

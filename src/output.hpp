@@ -5,7 +5,7 @@
 #include <platform_channels/method_channel.h>
 #include <memory>
 #include <mutex>
-#include "embedder_state.hpp"
+#include "flutter_engine/embedder_state.hpp"
 #include "swap_chain.hpp"
 #include "util/wlr/wlr_helpers.hpp"
 #include <GLES2/gl2.h>

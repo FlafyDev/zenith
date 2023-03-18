@@ -45,3 +45,11 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 /deps/
+
+# Meson
+.direnv
+builddir
+
+# Nix
+result
+.direnv

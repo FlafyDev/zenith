@@ -2,12 +2,12 @@
 #include <csignal>
 #include "platform_api.hpp"
 #include "server.hpp"
-#include "encodable_value.h"
-#include "time.hpp"
+#include <platform_channels/encodable_value.h>
+#include "util/time.hpp"
 #include "util/embedder/string_to_keycode.hpp"
-#include "assert.hpp"
+#include "util/assert.hpp"
 #include "util/wlr/wlr_extensions.hpp"
-#include "auth.hpp"
+#include "pam/auth.hpp"
 
 extern "C" {
 #define static

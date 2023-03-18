@@ -1,10 +1,10 @@
 #include "output.hpp"
 #include "server.hpp"
-#include "embedder_callbacks.hpp"
+#include "flutter_engine/embedder_callbacks.hpp"
 #include "util/wlr/wlr_helpers.hpp"
 #include "swap_chain.hpp"
 #include "util/wlr/scoped_wlr_buffer.hpp"
-#include "debug.hpp"
+#include "util/debug.hpp"
 #include <unistd.h>
 
 extern "C" {

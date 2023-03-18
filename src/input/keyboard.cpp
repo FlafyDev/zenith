@@ -1,8 +1,8 @@
 #include <libinput.h>
 #include "keyboard.hpp"
 #include "server.hpp"
-#include "encodable_value.h"
-#include "json_message_codec.h"
+#include <platform_channels/encodable_value.h>
+#include <platform_channels/json_message_codec.h>
 
 extern "C" {
 #include <wayland-util.h>

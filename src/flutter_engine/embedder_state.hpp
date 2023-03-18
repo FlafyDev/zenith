@@ -6,10 +6,10 @@
 #include "platform_channels/incoming_message_dispatcher.hpp"
 #include "platform_channels/method_channel.h"
 #include "task_runner.hpp"
-#include "basic_message_channel.h"
-#include "document.h"
+#include <platform_channels/basic_message_channel.h>
+#include <rapidjson/document.h>
 #include "surface_buffer_chain.hpp"
-#include "callable_queue.hpp"
+#include "util/rethreading/callable_queue.hpp"
 #include "message_structs.hpp"
 
 extern "C" {

@@ -9,7 +9,7 @@
 #include <EGL/eglext.h>
 
 extern "C" {
-#include "dma-buf.h"
+#include <linux/dma-buf.h>
 
 #define static
 #include <wlr/types/wlr_xdg_shell.h>

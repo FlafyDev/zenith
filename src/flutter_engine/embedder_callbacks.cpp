@@ -1,7 +1,7 @@
 #include "embedder_callbacks.hpp"
 #include "embedder_state.hpp"
 #include "server.hpp"
-#include "rect.hpp"
+#include "util/rect.hpp"
 
 extern "C" {
 #include <GLES3/gl3.h>

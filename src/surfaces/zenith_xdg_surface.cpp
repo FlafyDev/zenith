@@ -1,7 +1,7 @@
 #include "zenith_xdg_surface.hpp"
-#include "binary_messenger.hpp"
+#include <platform_channels/binary_messenger.hpp>
 #include "server.hpp"
-#include "assert.hpp"
+#include "util/assert.hpp"
 
 ZenithXdgSurface::ZenithXdgSurface(wlr_xdg_surface* xdg_surface, std::shared_ptr<ZenithSurface> zenith_surface)
 	  : xdg_surface{xdg_surface}, zenith_surface(std::move(zenith_surface)) {

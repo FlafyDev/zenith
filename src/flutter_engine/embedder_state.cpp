@@ -1,8 +1,8 @@
 #include "embedder_state.hpp"
 #include "embedder_callbacks.hpp"
 #include "platform_api.hpp"
-#include "standard_method_codec.h"
-#include "json_message_codec.h"
+#include <platform_channels/standard_method_codec.h>
+#include <platform_channels/json_message_codec.h>
 #include <filesystem>
 #include <thread>
 #include <unistd.h>

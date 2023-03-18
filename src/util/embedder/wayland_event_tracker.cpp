@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <iostream>
 #include "wayland_event_tracker.hpp"
-#include "time.hpp"
+#include "util/time.hpp"
 
 const uint64_t ONE_SEC = 1'000'000'000; // in nanoseconds
 

@@ -4,7 +4,7 @@
 #include <queue>
 #include "channel.hpp"
 #include <iostream>
-#include "assert.hpp"
+#include "util/assert.hpp"
 #include <sys/eventfd.h>
 #include <optional>
 

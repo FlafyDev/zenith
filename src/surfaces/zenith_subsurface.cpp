@@ -1,5 +1,5 @@
 #include "zenith_subsurface.hpp"
-#include "binary_messenger.hpp"
+#include <platform_channels/binary_messenger.hpp>
 #include "server.hpp"
 
 ZenithSubsurface::ZenithSubsurface(wlr_subsurface* subsurface, std::shared_ptr<ZenithSurface> zenith_surface)
