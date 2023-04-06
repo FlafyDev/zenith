@@ -163,6 +163,8 @@ void EmbedderState::register_platform_api() {
 				  close_window(server, call, std::move(result));
 			  } else if (method_name == "resize_window") {
 				  resize_window(server, call, std::move(result));
+			  } else if (method_name == "maximize_window") {
+				  maximize_window(server, call, std::move(result));
 			  } else if (method_name == "unregister_view_texture") {
 				  unregister_view_texture(server, call, std::move(result));
 			  } else if (method_name == "mouse_button_event") {
@@ -181,8 +183,10 @@ void EmbedderState::register_platform_api() {
 				  insert_text(server, call, std::move(result));
 			  } else if (method_name == "emulate_keycode") {
 				  emulate_keycode(server, call, std::move(result));
-			  } else if (method_name == "initial_window_size") {
-				  initial_window_size(server, call, std::move(result));
+			  } else if (method_name == "start_windows_maximized") {
+				  start_windows_maximized(server, call, std::move(result));
+			  } else if (method_name == "maximized_window_size") {
+				  maximized_window_size(server, call, std::move(result));
 			  } else if (method_name == "unlock_session") {
 				  unlock_session(server, call, std::move(result));
 			  } else if (method_name == "enable_display") {
@@ -392,6 +396,27 @@ void EmbedderState::commit_surface(const SurfaceCommitMessage& message) {
 			map.insert({EncodableValue("has_xdg_popup"), EncodableValue(false)});
 		}
 
+		if (message.toplevel_decoration.has_value()) {
+			map.insert({EncodableValue("has_toplevel_decoration"), EncodableValue(true)});
+			map.insert({EncodableValue("toplevel_decoration"), EncodableValue((int64_t) *message.toplevel_decoration)});
+		} else {
+			map.insert({EncodableValue("has_toplevel_decoration"), EncodableValue(false)});
+		}
+
+		if (message.toplevel_title.has_value()) {
+			map.insert({EncodableValue("has_toplevel_title"), EncodableValue(true)});
+			map.insert({EncodableValue("toplevel_title"), EncodableValue(*message.toplevel_title)});
+		} else {
+			map.insert({EncodableValue("has_toplevel_title"), EncodableValue(false)});
+		}
+
+		if (message.toplevel_app_id.has_value()) {
+			map.insert({EncodableValue("has_toplevel_app_id"), EncodableValue(true)});
+			map.insert({EncodableValue("toplevel_app_id"), EncodableValue(*message.toplevel_app_id)});
+		} else {
+			map.insert({EncodableValue("has_toplevel_app_id"), EncodableValue(false)});
+		}
+
 		auto value = std::make_unique<EncodableValue>(map);
 		platform_method_channel->InvokeMethod("commit_surface", std::move(value));
 	});
@@ -452,5 +477,44 @@ void EmbedderState::send_text_input_event(size_t view_id, TextInputEventType eve
 			  {EncodableValue("type"),    EncodableValue(type)},
 		});
 		platform_method_channel->InvokeMethod("send_text_input_event", std::move(value));
+	});
+}
+
+void EmbedderState::interactive_move(size_t view_id) {
+	callable_queue.enqueue([=] {
+		auto value = std::make_unique<EncodableValue>(EncodableMap{
+			  {EncodableValue("view_id"), EncodableValue((int64_t) view_id)},
+		});
+		platform_method_channel->InvokeMethod("interactive_move", std::move(value));
+	});
+}
+
+void EmbedderState::interactive_resize(size_t view_id, xdg_toplevel_resize_edge edge) {
+	callable_queue.enqueue([=] {
+		auto value = std::make_unique<EncodableValue>(EncodableMap{
+			  {EncodableValue("view_id"), EncodableValue((int64_t) view_id)},
+			  {EncodableValue("edge"),    EncodableValue((int64_t) edge)},
+		});
+		platform_method_channel->InvokeMethod("interactive_resize", std::move(value));
+	});
+}
+
+void EmbedderState::set_window_title(size_t view_id, const std::string& title) {
+	callable_queue.enqueue([=] {
+		auto value = std::make_unique<EncodableValue>(EncodableMap{
+			  {EncodableValue("view_id"), EncodableValue((int64_t) view_id)},
+			  {EncodableValue("title"),   EncodableValue(title)},
+		});
+		platform_method_channel->InvokeMethod("set_title", std::move(value));
+	});
+}
+
+void EmbedderState::set_app_id(size_t view_id, const std::string& app_id) {
+	callable_queue.enqueue([=] {
+		auto value = std::make_unique<EncodableValue>(EncodableMap{
+			  {EncodableValue("view_id"), EncodableValue((int64_t) view_id)},
+			  {EncodableValue("app_id"),  EncodableValue(app_id)},
+		});
+		platform_method_channel->InvokeMethod("set_app_id", std::move(value));
 	});
 }

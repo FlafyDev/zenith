@@ -50,17 +50,18 @@ void zenith_surface_commit(wl_listener* listener, void* data) {
 	ZenithSurface* zenith_surface = wl_container_of(listener, zenith_surface, commit);
 	wlr_surface* surface = zenith_surface->surface;
 	wlr_buffer* buffer = &surface->buffer->base;
+	auto* server = ZenithServer::instance();
 
 	auto commit_message = std::make_unique<SurfaceCommitMessage>();
 	commit_message->view_id = zenith_surface->id;
 
 	SurfaceRole role;
 	if (wlr_surface_is_xdg_surface(surface)) {
-		role = XDG_SURFACE;
+		role = SurfaceRole::XDG_SURFACE;
 	} else if (wlr_surface_is_subsurface(surface)) {
-		role = SUBSURFACE;
+		role = SurfaceRole::SUBSURFACE;
 	} else {
-		role = NONE;
+		role = SurfaceRole::NONE;
 	}
 
 	commit_message->surface = {
@@ -100,7 +101,7 @@ void zenith_surface_commit(wl_listener* listener, void* data) {
 	commit_message->subsurfaces_below = std::move(below);
 	commit_message->subsurfaces_above = std::move(above);
 
-	if (role == XDG_SURFACE) {
+	if (role == SurfaceRole::XDG_SURFACE) {
 		wlr_xdg_surface* xdg_surface = wlr_xdg_surface_from_wlr_surface(surface);
 		wlr_box visible_bounds = xdg_surface_get_visible_bounds(xdg_surface);
 		commit_message->xdg_surface = {
@@ -111,10 +112,22 @@ void zenith_surface_commit(wl_listener* listener, void* data) {
 			  .height = visible_bounds.height,
 		};
 		switch (xdg_surface->role) {
-			case WLR_XDG_SURFACE_ROLE_NONE:
-			case WLR_XDG_SURFACE_ROLE_TOPLEVEL:
+			case WLR_XDG_SURFACE_ROLE_TOPLEVEL: {
+				auto it = server->toplevel_decorations.find(zenith_surface->id);
+				if (it != server->toplevel_decorations.end()) {
+					commit_message->toplevel_decoration = (ToplevelDecoration) it->second->wlr_toplevel_decoration->pending.mode;
+				}
+				const char* title = xdg_surface->toplevel->title;
+				if (title != nullptr) {
+					commit_message->toplevel_title = title;
+				}
+				const char* app_id = xdg_surface->toplevel->app_id;
+				if (app_id != nullptr) {
+					commit_message->toplevel_app_id = app_id;
+				}
 				break;
-			case WLR_XDG_SURFACE_ROLE_POPUP:
+			}
+			case WLR_XDG_SURFACE_ROLE_POPUP: {
 				wlr_xdg_popup* popup = xdg_surface->popup;
 				int64_t parent_id;
 				if (popup->parent != nullptr) {
@@ -133,6 +146,9 @@ void zenith_surface_commit(wl_listener* listener, void* data) {
 					  .width = geometry.width,
 					  .height = geometry.height,
 				};
+				break;
+			}
+			case WLR_XDG_SURFACE_ROLE_NONE:
 				break;
 		}
 	}

@@ -122,6 +122,24 @@ void resize_window(ZenithServer* server,
 	result->Success();
 }
 
+void maximize_window(ZenithServer* server, const flutter::MethodCall<>& call,
+                     std::unique_ptr<flutter::MethodResult<>>&& result) {
+	flutter::EncodableMap args = std::get<flutter::EncodableMap>(call.arguments()[0]);
+	size_t view_id = std::get<int>(args[flutter::EncodableValue("view_id")]);
+	auto value = std::get<bool>(args[flutter::EncodableValue("value")]);
+
+	server->callable_queue.enqueue([server, view_id, value] {
+		auto view_it = server->xdg_toplevels.find(view_id);
+		if (view_it == server->xdg_toplevels.end()) {
+			return;
+		}
+		ZenithXdgToplevel* view = view_it->second.get();
+		view->maximize(value);
+	});
+
+	result->Success();
+}
+
 void unregister_view_texture(ZenithServer* server,
                              const flutter::MethodCall<>& call,
                              std::unique_ptr<flutter::MethodResult<>>&& result) {
@@ -264,7 +282,7 @@ void touch_cancel(ZenithServer* server, const flutter::MethodCall<>& call,
 			return;
 		}
 
-		wlr_seat_touch_notify_cancel(server->seat, surface);
+		zenith::wlr_seat_touch_notify_cancel(server->seat, surface);
 		wlr_seat_touch_notify_frame(server->seat);
 	});
 
@@ -341,8 +359,19 @@ void emulate_keycode(ZenithServer* server, const flutter::MethodCall<>& call,
 	result->Success();
 }
 
-void initial_window_size(ZenithServer* server, const flutter::MethodCall<>& call,
-                         std::unique_ptr<flutter::MethodResult<>>&& result) {
+void start_windows_maximized(ZenithServer* server, const flutter::MethodCall<>& call,
+                             std::unique_ptr<flutter::MethodResult<>>&& result) {
+	auto value = std::get<bool>(call.arguments()[0]);
+
+	server->callable_queue.enqueue([server, value] {
+		server->start_windows_maximized = value;
+	});
+
+	result->Success();
+}
+
+void maximized_window_size(ZenithServer* server, const flutter::MethodCall<>& call,
+                           std::unique_ptr<flutter::MethodResult<>>&& result) {
 
 	flutter::EncodableMap args = std::get<flutter::EncodableMap>(call.arguments()[0]);
 	auto width = std::get<int>(args[flutter::EncodableValue("width")]);
@@ -384,10 +413,13 @@ void enable_display(ZenithServer* server, const flutter::MethodCall<>& call,
 	auto enable = std::get<bool>(args[flutter::EncodableValue("enable")]);
 
 	server->callable_queue.enqueue([server, enable] {
-		wlr_output* wlr_output = server->output->wlr_output;
-		wlr_output_enable(wlr_output, enable);
+		if (server->output == nullptr) {
+			return;
+		}
 		if (enable) {
-			wlr_output_schedule_frame(wlr_output);
+			server->output->enable();
+		} else {
+			server->output->disable();
 		}
 	});
 

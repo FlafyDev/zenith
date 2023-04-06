@@ -54,3 +54,5 @@ builddir
 # Nix
 result
 .direnv
+
+.cache

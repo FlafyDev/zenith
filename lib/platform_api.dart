@@ -3,14 +3,18 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zenith/state/zenith_subsurface_state.dart';
-import 'package:zenith/state/zenith_surface_state.dart';
-import 'package:zenith/state/zenith_xdg_popup_state.dart';
-import 'package:zenith/state/zenith_xdg_surface_state.dart';
-import 'package:zenith/widgets/popup.dart';
-import 'package:zenith/widgets/subsurface.dart';
-import 'package:zenith/widgets/surface.dart';
-import 'package:zenith/widgets/window.dart';
+import 'package:zenith/ui/common/popup_stack.dart';
+import 'package:zenith/ui/common/state/zenith_subsurface_state.dart';
+import 'package:zenith/ui/common/state/zenith_surface_state.dart';
+import 'package:zenith/ui/common/state/zenith_xdg_popup_state.dart';
+import 'package:zenith/ui/common/state/zenith_xdg_surface_state.dart';
+import 'package:zenith/ui/common/state/zenith_xdg_toplevel_state.dart';
+import 'package:zenith/ui/common/subsurface.dart';
+import 'package:zenith/util/state_notifier_list.dart';
+
+final mappedWindowListProvider = StateNotifierProvider<StateNotifierList<int>, List<int>>((ref) {
+  return StateNotifierList<int>();
+});
 
 final windowMappedStreamProvider = StreamProvider<int>((ref) {
   return PlatformApi.windowMappedController.stream;
@@ -56,6 +60,18 @@ class PlatformApi {
           break;
         case "send_text_input_event":
           _sendTextInputEvent(call.arguments);
+          break;
+        case "interactive_move":
+          _interactiveMove(call.arguments);
+          break;
+        case "interactive_resize":
+          _interactiveResize(call.arguments);
+          break;
+        case "set_title":
+          _setTitle(call.arguments);
+          break;
+        case "set_app_id":
+          _setAppId(call.arguments);
           break;
         default:
           throw PlatformException(
@@ -149,10 +165,21 @@ class PlatformApi {
     });
   }
 
-  static Future<void> initialWindowSize(int width, int height) {
-    return platform.invokeMethod("initial_window_size", {
+  static Future<void> startWindowsMaximized(bool value) {
+    return platform.invokeMethod("start_windows_maximized", value);
+  }
+
+  static Future<void> maximizedWindowSize(int width, int height) {
+    return platform.invokeMethod("maximized_window_size", {
       "width": width,
       "height": height,
+    });
+  }
+
+  static Future<void> maximizeWindow(int viewId, bool value) {
+    return platform.invokeMethod("maximize_window", {
+      "view_id": viewId,
+      "value": value,
     });
   }
 
@@ -299,10 +326,24 @@ class PlatformApi {
       }
     }
 
-    ref.read(surfaceWidget(viewId).notifier).state = Surface(
-      key: ref.read(zenithSurfaceStateProvider(viewId)).widgetKey,
-      viewId: viewId,
-    );
+    bool hasToplevelDecoration = event["has_toplevel_decoration"];
+    if (hasToplevelDecoration) {
+      int toplevelDecorationInt = event["toplevel_decoration"];
+      var decoration = ToplevelDecoration.fromInt(toplevelDecorationInt);
+      ref.read(zenithXdgToplevelStateProvider(viewId).notifier).setDecoration(decoration);
+    }
+
+    bool hasToplevelTitle = event["has_toplevel_title"];
+    if (hasToplevelTitle) {
+      String title = event["toplevel_title"];
+      ref.read(zenithXdgToplevelStateProvider(viewId).notifier).setTitle(title);
+    }
+
+    bool hasToplevelAppId = event["has_toplevel_app_id"];
+    if (hasToplevelAppId) {
+      String appId = event["toplevel_app_id"];
+      ref.read(zenithXdgToplevelStateProvider(viewId).notifier).setAppId(appId);
+    }
   }
 
   static void _mapXdgSurface(dynamic event) {
@@ -316,24 +357,13 @@ class PlatformApi {
           print("unreachable");
           print(StackTrace.current);
         }
-        break; // Unreachable.
+        break;
       case XdgSurfaceRole.toplevel:
-        ref.read(windowWidget(viewId).notifier).state = Window(
-          key: ref.read(zenithXdgSurfaceStateProvider(viewId)).widgetKey,
-          viewId: viewId,
-        );
+        ref.read(mappedWindowListProvider.notifier).add(viewId);
         windowMappedController.add(viewId);
         break;
       case XdgSurfaceRole.popup:
-        var popup = ref.read(zenithXdgPopupStateProvider(viewId));
-
-        ref.read(popupWidget(viewId).notifier).state = Popup(
-          key: ref.read(zenithXdgSurfaceStateProvider(viewId)).widgetKey,
-          viewId: viewId,
-        );
-
-        ref.read(zenithXdgSurfaceStateProvider(popup.parentViewId).notifier).addPopup(viewId);
-
+        ref.read(popupStackChildren.notifier).add(viewId);
         break;
     }
   }
@@ -351,14 +381,13 @@ class PlatformApi {
         }
         break; // Unreachable.
       case XdgSurfaceRole.toplevel:
+        ref.read(mappedWindowListProvider.notifier).remove(viewId);
         windowUnmappedController.add(viewId);
         break;
       case XdgSurfaceRole.popup:
         await ref.read(zenithXdgPopupStateProvider(viewId).notifier).animateClosing();
-
-        final state = ref.read(zenithXdgPopupStateProvider(viewId));
         PlatformApi.unregisterViewTexture(ref.read(zenithSurfaceStateProvider(viewId)).textureId);
-        ref.read(zenithXdgSurfaceStateProvider(state.parentViewId).notifier).removePopup(viewId);
+        ref.read(popupStackChildren.notifier).remove(viewId);
         break;
     }
   }
@@ -367,10 +396,6 @@ class PlatformApi {
     int viewId = event["view_id"];
 
     ref.read(zenithSubsurfaceStateProvider(viewId).notifier).map(true);
-    ref.read(subsurfaceWidget(viewId).notifier).state = Subsurface(
-      key: ref.read(zenithSubsurfaceStateProvider(viewId)).widgetKey,
-      viewId: viewId,
-    );
   }
 
   static void _unmapSubsurface(dynamic event) {
@@ -382,6 +407,30 @@ class PlatformApi {
 
   static void _sendTextInputEvent(dynamic event) {
     textInputEventsStreamController.sink.add(event);
+  }
+
+  static void _interactiveMove(dynamic event) {
+    int viewId = event["view_id"];
+    ref.read(zenithXdgToplevelStateProvider(viewId).notifier).requestInteractiveMove();
+  }
+
+  static void _interactiveResize(dynamic event) {
+    int viewId = event["view_id"];
+    int edge = event["edge"];
+    ResizeEdge resizeEdge = ResizeEdge.fromInt(edge);
+    ref.read(zenithXdgToplevelStateProvider(viewId).notifier).requestInteractiveResize(resizeEdge);
+  }
+
+  static void _setTitle(dynamic event) {
+    int viewId = event["view_id"];
+    String title = event["title"];
+    ref.read(zenithXdgToplevelStateProvider(viewId).notifier).setTitle(title);
+  }
+
+  static void _setAppId(dynamic event) {
+    int viewId = event["view_id"];
+    String appId = event["app_id"];
+    ref.read(zenithXdgToplevelStateProvider(viewId).notifier).setTitle(appId);
   }
 }
 

@@ -6,10 +6,20 @@ incdirs = [
   include_directories('third_party/rapidjson/include'),
 ] 
 
+
+if type == 'debug'
+  typeArg = '-DDEBUG'
+elif type == 'profile'
+  typeArg = '-DPROFILE'
+elif type == 'release'
+  typeArg = '-DRELEASE'
+endif
+
 executable('zenith', src,
   include_directories: incdirs,
   cpp_args: [
     '-DWLR_USE_UNSTABLE', 
+    typeArg,
     '-O',
     '-MMD',
     '-MP',
