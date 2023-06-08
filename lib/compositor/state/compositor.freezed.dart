@@ -18,7 +18,9 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$Compositor {
   Map<int, SurfaceCommitState> get surfacesState =>
       throw _privateConstructorUsedError;
-  List<int> get mappedXdgSurfaces => throw _privateConstructorUsedError;
+  List<int> get mappedXdgTopLevels => throw _privateConstructorUsedError;
+  List<int> get mappedXdgPopups => throw _privateConstructorUsedError;
+  List<int> get mappedSubsurfaces => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $CompositorCopyWith<Compositor> get copyWith =>
@@ -33,7 +35,9 @@ abstract class $CompositorCopyWith<$Res> {
   @useResult
   $Res call(
       {Map<int, SurfaceCommitState> surfacesState,
-      List<int> mappedXdgSurfaces});
+      List<int> mappedXdgTopLevels,
+      List<int> mappedXdgPopups,
+      List<int> mappedSubsurfaces});
 }
 
 /// @nodoc
@@ -50,16 +54,26 @@ class _$CompositorCopyWithImpl<$Res, $Val extends Compositor>
   @override
   $Res call({
     Object? surfacesState = null,
-    Object? mappedXdgSurfaces = null,
+    Object? mappedXdgTopLevels = null,
+    Object? mappedXdgPopups = null,
+    Object? mappedSubsurfaces = null,
   }) {
     return _then(_value.copyWith(
       surfacesState: null == surfacesState
           ? _value.surfacesState
           : surfacesState // ignore: cast_nullable_to_non_nullable
               as Map<int, SurfaceCommitState>,
-      mappedXdgSurfaces: null == mappedXdgSurfaces
-          ? _value.mappedXdgSurfaces
-          : mappedXdgSurfaces // ignore: cast_nullable_to_non_nullable
+      mappedXdgTopLevels: null == mappedXdgTopLevels
+          ? _value.mappedXdgTopLevels
+          : mappedXdgTopLevels // ignore: cast_nullable_to_non_nullable
+              as List<int>,
+      mappedXdgPopups: null == mappedXdgPopups
+          ? _value.mappedXdgPopups
+          : mappedXdgPopups // ignore: cast_nullable_to_non_nullable
+              as List<int>,
+      mappedSubsurfaces: null == mappedSubsurfaces
+          ? _value.mappedSubsurfaces
+          : mappedSubsurfaces // ignore: cast_nullable_to_non_nullable
               as List<int>,
     ) as $Val);
   }
@@ -75,7 +89,9 @@ abstract class _$$_CompositorCopyWith<$Res>
   @useResult
   $Res call(
       {Map<int, SurfaceCommitState> surfacesState,
-      List<int> mappedXdgSurfaces});
+      List<int> mappedXdgTopLevels,
+      List<int> mappedXdgPopups,
+      List<int> mappedSubsurfaces});
 }
 
 /// @nodoc
@@ -90,16 +106,26 @@ class __$$_CompositorCopyWithImpl<$Res>
   @override
   $Res call({
     Object? surfacesState = null,
-    Object? mappedXdgSurfaces = null,
+    Object? mappedXdgTopLevels = null,
+    Object? mappedXdgPopups = null,
+    Object? mappedSubsurfaces = null,
   }) {
     return _then(_$_Compositor(
       surfacesState: null == surfacesState
           ? _value._surfacesState
           : surfacesState // ignore: cast_nullable_to_non_nullable
               as Map<int, SurfaceCommitState>,
-      mappedXdgSurfaces: null == mappedXdgSurfaces
-          ? _value._mappedXdgSurfaces
-          : mappedXdgSurfaces // ignore: cast_nullable_to_non_nullable
+      mappedXdgTopLevels: null == mappedXdgTopLevels
+          ? _value._mappedXdgTopLevels
+          : mappedXdgTopLevels // ignore: cast_nullable_to_non_nullable
+              as List<int>,
+      mappedXdgPopups: null == mappedXdgPopups
+          ? _value._mappedXdgPopups
+          : mappedXdgPopups // ignore: cast_nullable_to_non_nullable
+              as List<int>,
+      mappedSubsurfaces: null == mappedSubsurfaces
+          ? _value._mappedSubsurfaces
+          : mappedSubsurfaces // ignore: cast_nullable_to_non_nullable
               as List<int>,
     ));
   }
@@ -110,9 +136,13 @@ class __$$_CompositorCopyWithImpl<$Res>
 class _$_Compositor implements _Compositor {
   const _$_Compositor(
       {required final Map<int, SurfaceCommitState> surfacesState,
-      required final List<int> mappedXdgSurfaces})
+      required final List<int> mappedXdgTopLevels,
+      required final List<int> mappedXdgPopups,
+      required final List<int> mappedSubsurfaces})
       : _surfacesState = surfacesState,
-        _mappedXdgSurfaces = mappedXdgSurfaces;
+        _mappedXdgTopLevels = mappedXdgTopLevels,
+        _mappedXdgPopups = mappedXdgPopups,
+        _mappedSubsurfaces = mappedSubsurfaces;
 
   final Map<int, SurfaceCommitState> _surfacesState;
   @override
@@ -122,18 +152,35 @@ class _$_Compositor implements _Compositor {
     return EqualUnmodifiableMapView(_surfacesState);
   }
 
-  final List<int> _mappedXdgSurfaces;
+  final List<int> _mappedXdgTopLevels;
   @override
-  List<int> get mappedXdgSurfaces {
-    if (_mappedXdgSurfaces is EqualUnmodifiableListView)
-      return _mappedXdgSurfaces;
+  List<int> get mappedXdgTopLevels {
+    if (_mappedXdgTopLevels is EqualUnmodifiableListView)
+      return _mappedXdgTopLevels;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_mappedXdgSurfaces);
+    return EqualUnmodifiableListView(_mappedXdgTopLevels);
+  }
+
+  final List<int> _mappedXdgPopups;
+  @override
+  List<int> get mappedXdgPopups {
+    if (_mappedXdgPopups is EqualUnmodifiableListView) return _mappedXdgPopups;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_mappedXdgPopups);
+  }
+
+  final List<int> _mappedSubsurfaces;
+  @override
+  List<int> get mappedSubsurfaces {
+    if (_mappedSubsurfaces is EqualUnmodifiableListView)
+      return _mappedSubsurfaces;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_mappedSubsurfaces);
   }
 
   @override
   String toString() {
-    return 'Compositor(surfacesState: $surfacesState, mappedXdgSurfaces: $mappedXdgSurfaces)';
+    return 'Compositor(surfacesState: $surfacesState, mappedXdgTopLevels: $mappedXdgTopLevels, mappedXdgPopups: $mappedXdgPopups, mappedSubsurfaces: $mappedSubsurfaces)';
   }
 
   @override
@@ -144,14 +191,20 @@ class _$_Compositor implements _Compositor {
             const DeepCollectionEquality()
                 .equals(other._surfacesState, _surfacesState) &&
             const DeepCollectionEquality()
-                .equals(other._mappedXdgSurfaces, _mappedXdgSurfaces));
+                .equals(other._mappedXdgTopLevels, _mappedXdgTopLevels) &&
+            const DeepCollectionEquality()
+                .equals(other._mappedXdgPopups, _mappedXdgPopups) &&
+            const DeepCollectionEquality()
+                .equals(other._mappedSubsurfaces, _mappedSubsurfaces));
   }
 
   @override
   int get hashCode => Object.hash(
       runtimeType,
       const DeepCollectionEquality().hash(_surfacesState),
-      const DeepCollectionEquality().hash(_mappedXdgSurfaces));
+      const DeepCollectionEquality().hash(_mappedXdgTopLevels),
+      const DeepCollectionEquality().hash(_mappedXdgPopups),
+      const DeepCollectionEquality().hash(_mappedSubsurfaces));
 
   @JsonKey(ignore: true)
   @override
@@ -163,12 +216,18 @@ class _$_Compositor implements _Compositor {
 abstract class _Compositor implements Compositor {
   const factory _Compositor(
       {required final Map<int, SurfaceCommitState> surfacesState,
-      required final List<int> mappedXdgSurfaces}) = _$_Compositor;
+      required final List<int> mappedXdgTopLevels,
+      required final List<int> mappedXdgPopups,
+      required final List<int> mappedSubsurfaces}) = _$_Compositor;
 
   @override
   Map<int, SurfaceCommitState> get surfacesState;
   @override
-  List<int> get mappedXdgSurfaces;
+  List<int> get mappedXdgTopLevels;
+  @override
+  List<int> get mappedXdgPopups;
+  @override
+  List<int> get mappedSubsurfaces;
   @override
   @JsonKey(ignore: true)
   _$$_CompositorCopyWith<_$_Compositor> get copyWith =>

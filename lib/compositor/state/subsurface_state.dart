@@ -15,10 +15,9 @@ class SubsurfaceState with _$SubsurfaceState {
     return SubsurfaceState(
       id: json['id'] as int,
       position: Offset(
-        json['x'] as double,
-        json['y'] as double,
+        (json['x'] as int).toDouble(),
+        (json['y'] as int).toDouble(),
       ),
     );
   }
 }
-

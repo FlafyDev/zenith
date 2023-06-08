@@ -2,7 +2,7 @@ project('Zenith', 'cpp', 'c',
   version: run_command('yq', '.version', join_paths(meson.source_root(), 'pubspec.yaml'), check: true).stdout().strip(),
 )
 version = meson.project_version()
-type = 'debug'
+type = 'release'
 
 fs = import('fs')
 

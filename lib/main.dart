@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:visibility_detector/visibility_detector.dart';
-import 'package:zenith/platform_api.dart';
 import 'package:zenith/zenith/window_manager.dart';
 
 void main() {
@@ -15,10 +14,9 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   final container = ProviderContainer();
-  final channel = container.read(compositorPlatformApi);
 
   SchedulerBinding.instance.addPostFrameCallback((_) {
-    channel.invokeMethod("startup_complete");
+    const MethodChannel("platform").invokeMethod("startup_complete");
   });
 
   VisibilityDetectorController.instance.updateInterval = Duration.zero;
@@ -46,7 +44,8 @@ class Zenith extends HookConsumerWidget {
     // Let's use a WidgetApp for now. We cannot anymore select UI elements via the keyboard, but we
     // don't care about that on a mobile phone.
     return LayoutBuilder(builder: (context, constraints) {
-      Future.microtask(() => ref.read(screenSizeProvider.notifier).state = constraints.biggest);
+      Future.microtask(() =>
+          ref.read(screenSizeProvider.notifier).state = constraints.biggest);
       return WidgetsApp(
         color: Colors.blue,
         builder: (BuildContext context, Widget? child) {
@@ -72,7 +71,7 @@ class Zenith extends HookConsumerWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.blueGrey,
+                      Colors.red,
                       Colors.lightBlue,
                     ],
                   ),

@@ -3,28 +3,30 @@
 
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
-    dart-flutter.url = "path:/mnt/general/repos/flafydev/dart-flutter-nix";
   };
 
-  outputs = { self, flake-utils, nixpkgs, dart-flutter, ... }:
+  outputs = {
+    self,
+    flake-utils,
+    nixpkgs,
+    ...
+  }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {
         inherit system;
-        overlays = [
-          dart-flutter.overlays.default
-          self.overlays.default
-        ];
-      }; 
+        overlays = [self.overlays.default];
+      };
     in {
       packages = {
         inherit (pkgs) flutter-elinux-engine;
       };
-      devShell = pkgs.mkFlutterShell {
+      devShell = pkgs.mkShell {
         nativeBuildInputs = with pkgs; [
           meson
           pkg-config
         ];
         buildInputs = with pkgs; [
+          ninja
           wlroots
           libglvnd
           libepoxy
@@ -34,15 +36,18 @@
           libinput
           yq
           pam
+          cairo
           libdrm
           flutter-elinux-engine
+          (flutter.override {
+            supportsAndroid = false;
+          })
         ];
-        linux.enable = true;
       };
-    }) // {
+    })
+    // {
       overlays.default = _final: prev: {
-        flutter-elinux-engine = prev.callPackage ./nix/flutter-elinux-engine.nix { };
+        flutter-elinux-engine = prev.callPackage ./nix/flutter-elinux-engine.nix {};
       };
-    }; 
+    };
 }
-
