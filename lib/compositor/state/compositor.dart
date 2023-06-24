@@ -18,7 +18,6 @@ class CompositorNotifier extends StateNotifier<Compositor> {
         )) {
     channel.setMethodCallHandler((call) async {
       try {
-        print(call.method);
         final args =
             (call.arguments as Map<Object?, Object?>).cast<String, dynamic>();
         switch (call.method) {
@@ -74,8 +73,6 @@ class CompositorNotifier extends StateNotifier<Compositor> {
   static const channel = MethodChannel("platform");
 
   void commitSurface(SurfaceCommitState commit) {
-    print(commit.viewId);
-    print(commit.surface.subsurfacesAbove);
     state = state.copyWith(
       surfacesState: {
         ...state.surfacesState,
@@ -172,13 +169,20 @@ class CompositorNotifier extends StateNotifier<Compositor> {
     });
   }
 
-
   Future<void> sendMouseButtonEvent(int button, bool isPressed) {
     // One might find surprising that the view id is not sent to the platform. This is because the view id is only sent
     // when the pointer moves, and when a button event happens, the platform already knows which view it hovers.
     return channel.invokeMethod("mouse_button_event", {
       "button": button,
       "is_pressed": isPressed,
+    });
+  }
+
+  Future<void> resizeWindow(int viewId, int width, int height) {
+    return channel.invokeMethod("resize_window", {
+      "view_id": viewId,
+      "width": width,
+      "height": height,
     });
   }
 }

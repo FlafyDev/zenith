@@ -34,6 +34,7 @@ extern "C" {
 #include <wlr/types/wlr_text_input_v3.h>
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_data_device.h>
+#include <wlr/types/wlr_server_decoration.h>
 #undef static
 }
 
@@ -60,6 +61,7 @@ public:
 	wlr_xdg_shell* xdg_shell;
 	wlr_text_input_manager_v3* text_input_manager;
 	wlr_xdg_decoration_manager_v1* decoration_manager;
+	wlr_server_decoration_manager* server_decoration_manager;
 	wlr_data_device_manager* data_device_manager;
 
 	wlr_output_layout* output_layout;
@@ -83,6 +85,7 @@ public:
 	wl_listener request_cursor{};
 	wl_listener new_text_input{};
 	wl_listener new_toplevel_decoration{};
+	wl_listener new_server_decoration{};
 	wl_listener request_set_selection{};
 
 	std::unordered_map<size_t, std::shared_ptr<ZenithSurface>> surfaces{};
@@ -90,7 +93,7 @@ public:
 	std::unordered_map<size_t, std::shared_ptr<ZenithXdgSurface>> xdg_surfaces{};
 	std::unordered_map<size_t, std::shared_ptr<ZenithXdgToplevel>> xdg_toplevels{};
 	std::unordered_map<size_t, std::shared_ptr<ZenithXdgPopup>> xdg_popups{};
-	std::unordered_map<size_t, std::shared_ptr<ZenithToplevelDecoration>> toplevel_decorations{};
+	// std::unordered_map<size_t, std::shared_ptr<ZenithToplevelDecoration>> toplevel_decorations{};
 
 	wlr_seat* seat;
 	std::unique_ptr<ZenithPointer> pointer;

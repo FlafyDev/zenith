@@ -12,6 +12,7 @@ extern "C" {
 #define static
 #include <wlr/types/wlr_compositor.h>
 #include <wlr/types/wlr_data_device.h>
+#include <wlr/types/wlr_server_decoration.h>
 #include <wlr/render/allocator.h>
 #include <wlr/backend/libinput.h>
 #include <wlr/backend/drm.h>
@@ -109,7 +110,17 @@ ZenithServer::ZenithServer() {
 		exit(-1);
 	}
 
+  server_decoration_manager = wlr_server_decoration_manager_create(display);
+
+	if (server_decoration_manager == nullptr) {
+		wlr_log(WLR_ERROR, "Could not create text input manager");
+		exit(-1);
+	}
+
+  wlr_server_decoration_manager_set_default_mode(server_decoration_manager, WLR_SERVER_DECORATION_MANAGER_MODE_SERVER);
+
 	decoration_manager = wlr_xdg_decoration_manager_v1_create(display);
+
 	if (decoration_manager == nullptr) {
 		wlr_log(WLR_ERROR, "Could not create text input manager");
 		exit(-1);
@@ -145,6 +156,9 @@ ZenithServer::ZenithServer() {
 
 	new_toplevel_decoration.notify = toplevel_decoration_create_handle;
 	wl_signal_add(&decoration_manager->events.new_toplevel_decoration, &new_toplevel_decoration);
+
+  // new_server_decoration.notify = server_decoration_create_handle;
+  // wl_signal_add(&server_decoration_manager->events.new_decoration, &new_server_decoration);
 
 	request_set_selection.notify = server_seat_request_set_selection;
 	wl_signal_add(&seat->events.request_set_selection, &request_set_selection);

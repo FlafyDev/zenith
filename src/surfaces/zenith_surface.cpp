@@ -113,10 +113,10 @@ void zenith_surface_commit(wl_listener* listener, void* data) {
 		};
 		switch (xdg_surface->role) {
 			case WLR_XDG_SURFACE_ROLE_TOPLEVEL: {
-				auto it = server->toplevel_decorations.find(zenith_surface->id);
-				if (it != server->toplevel_decorations.end()) {
-					commit_message->toplevel_decoration = (ToplevelDecoration) it->second->wlr_toplevel_decoration->pending.mode;
-				}
+				// auto it = server->toplevel_decorations.find(zenith_surface->id);
+				// if (it != server->toplevel_decorations.end()) {
+				// 	commit_message->toplevel_decoration = (ToplevelDecoration) it->second->wlr_toplevel_decoration->pending.mode;
+				// }
 				const char* title = xdg_surface->toplevel->title;
 				if (title != nullptr) {
 					commit_message->toplevel_title = title;
