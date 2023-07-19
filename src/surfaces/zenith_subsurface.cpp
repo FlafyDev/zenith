@@ -5,10 +5,10 @@
 ZenithSubsurface::ZenithSubsurface(wlr_subsurface* subsurface, std::shared_ptr<ZenithSurface> zenith_surface)
 	  : subsurface{subsurface}, zenith_surface{std::move(zenith_surface)} {
 	map.notify = zenith_subsurface_map;
-	wl_signal_add(&subsurface->events.map, &map);
+	wl_signal_add(&subsurface->surface->events.map, &map);
 
 	unmap.notify = zenith_subsurface_unmap;
-	wl_signal_add(&subsurface->events.unmap, &unmap);
+	wl_signal_add(&subsurface->surface->events.unmap, &unmap);
 
 	destroy.notify = zenith_subsurface_destroy;
 	wl_signal_add(&subsurface->events.destroy, &destroy);

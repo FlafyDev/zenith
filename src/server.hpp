@@ -1,4 +1,5 @@
 #pragma once
+#include "../wlr-includes.hpp"
 
 #include <wayland-server.h>
 #include <list>
@@ -19,24 +20,9 @@
 #include "util/rethreading/callable_queue.hpp"
 #include "util/offset.hpp"
 #include "flutter_engine/embedder_state.hpp"
+// #include "xwayland.hpp"
 #include "zenith_toplevel_decoration.hpp"
 
-extern "C" {
-#define static
-#include <wlr/backend.h>
-#define class class_variable
-#include <wlr/xwayland.h>
-#undef class
-#include <wlr/types/wlr_xdg_shell.h>
-#include <wlr/types/wlr_output_layout.h>
-#include <wlr/types/wlr_cursor.h>
-#include <wlr/types/wlr_xcursor_manager.h>
-#include <wlr/types/wlr_text_input_v3.h>
-#include <wlr/types/wlr_xdg_decoration_v1.h>
-#include <wlr/types/wlr_data_device.h>
-#include <wlr/types/wlr_server_decoration.h>
-#undef static
-}
 
 struct ZenithServer {
 private:
@@ -57,8 +43,10 @@ public:
 	wlr_backend* backend;
 	wlr_renderer* renderer;
 	wlr_allocator* allocator;
+  wlr_session* session;
 	wlr_compositor* compositor;
 	wlr_xdg_shell* xdg_shell;
+  // wlr_xwayland* xwayland;
 	wlr_text_input_manager_v3* text_input_manager;
 	wlr_xdg_decoration_manager_v1* decoration_manager;
 	wlr_server_decoration_manager* server_decoration_manager;
@@ -87,12 +75,15 @@ public:
 	wl_listener new_toplevel_decoration{};
 	wl_listener new_server_decoration{};
 	wl_listener request_set_selection{};
+  wl_listener xwayland_new_surface{};
+  wl_listener xwayland_ready{};
 
 	std::unordered_map<size_t, std::shared_ptr<ZenithSurface>> surfaces{};
 	std::unordered_map<size_t, std::shared_ptr<ZenithSubsurface>> subsurfaces{};
 	std::unordered_map<size_t, std::shared_ptr<ZenithXdgSurface>> xdg_surfaces{};
 	std::unordered_map<size_t, std::shared_ptr<ZenithXdgToplevel>> xdg_toplevels{};
 	std::unordered_map<size_t, std::shared_ptr<ZenithXdgPopup>> xdg_popups{};
+	// std::unordered_map<size_t, std::shared_ptr<ZenithXWaylandSurface>> xwayland_surfaces{};
 	// std::unordered_map<size_t, std::shared_ptr<ZenithToplevelDecoration>> toplevel_decorations{};
 
 	wlr_seat* seat;

@@ -2,17 +2,12 @@
 
 // TODO: Re-extract the functions when updating wlroots.
 
+#include "../wlr-includes.hpp"
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <GLES2/gl2.h>
 #include <wayland-util.h>
 
-extern "C" {
-#include <wlr/types/wlr_output.h>
-#define static
-#include <wlr/util/addon.h>
-#undef static
-}
 
 struct wlr_drm_format* get_output_format(wlr_output* output);
 
@@ -54,5 +49,9 @@ struct wlr_gles2_tex_shader {
 
 EGLImageKHR wlr_egl_create_image_from_dmabuf(struct wlr_egl* egl,
                                              struct wlr_dmabuf_attributes* attributes, bool* external_only);
+
+bool wlr_egl_make_current(struct wlr_egl *egl);
+
+bool wlr_egl_unset_current(struct wlr_egl *egl);
 
 bool wlr_egl_destroy_image(struct wlr_egl* egl, EGLImage image);

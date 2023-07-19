@@ -65,27 +65,36 @@ class Zenith extends HookConsumerWidget {
               body: Container(
                 width: constraints.biggest.width,
                 height: constraints.biggest.height,
-                decoration: const BoxDecoration(
-                  // gradient
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.red,
-                      Colors.blue,
-                      Colors.red,
-                      Colors.blue,
-                      Colors.red,
-                      Colors.blue,
-                      Colors.red,
-                      Colors.blue,
-                      Colors.red,
-                      Colors.blue,
-                    ],
-                  ),
-                  color: Colors.black,
+                // decoration: const BoxDecoration(
+                //   // gradient
+                //   gradient: LinearGradient(
+                //     begin: Alignment.topLeft,
+                //     end: Alignment.bottomRight,
+                //     colors: [
+                //       Colors.red,
+                //       Colors.blue,
+                //       Colors.red,
+                //       Colors.blue,
+                //       Colors.red,
+                //       Colors.blue,
+                //       Colors.red,
+                //       Colors.blue,
+                //       Colors.red,
+                //       Colors.blue,
+                //     ],
+                //   ),
+                //   color: Colors.black,
+                // ),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      width: 1920,
+                      height: 1080,
+                      child: Image.asset("assets/images/background.jpg"),
+                    ),
+                    const WindowManager(),
+                  ],
                 ),
-                child: const WindowManager(),
               ),
             ),
           );

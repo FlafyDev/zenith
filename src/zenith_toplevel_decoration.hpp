@@ -1,12 +1,8 @@
 #pragma once
+#include "wlr-includes.hpp"
 
 #include "surfaces/zenith_xdg_surface.hpp"
 
-extern "C" {
-#define static
-#include <wlr/types/wlr_xdg_decoration_v1.h>
-#undef static
-}
 
 // struct ZenithToplevelDecoration {
 // 	wlr_xdg_toplevel_decoration_v1* wlr_toplevel_decoration;

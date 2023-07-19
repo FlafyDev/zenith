@@ -1,14 +1,10 @@
 #pragma once
 
+#include "../wlr-includes.hpp"
 #include "keyboard.hpp"
 #include <wayland-util.h>
 #include <xkbcommon/xkbcommon.h>
 
-extern "C" {
-#define static
-#include <wlr/types/wlr_input_device.h>
-#undef static
-}
 
 struct ZenithServer;
 

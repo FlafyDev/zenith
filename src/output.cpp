@@ -7,17 +7,6 @@
 #include "util/debug.hpp"
 #include <unistd.h>
 
-extern "C" {
-#include <libdrm/drm_fourcc.h>
-#include <GLES2/gl2ext.h>
-#define static
-#include <wlr/render/gles2.h>
-#include <wlr/util/log.h>
-#include <wlr/backend/drm.h>
-#include <wlr/render/allocator.h>
-#include <wlr/render/interface.h>
-#undef static
-}
 
 ZenithOutput::ZenithOutput(struct wlr_output* wlr_output)
 	  : wlr_output(wlr_output) {
@@ -26,8 +15,8 @@ ZenithOutput::ZenithOutput(struct wlr_output* wlr_output)
 
 	frame_listener.notify = output_frame;
 	wl_signal_add(&wlr_output->events.frame, &frame_listener);
-	mode_changed.notify = mode_changed_event;
-	wl_signal_add(&wlr_output->events.mode, &mode_changed);
+	// mode_changed.notify = mode_changed_event;
+	// wl_signal_add(&wlr_output->events.mode, &mode_changed);
 	destroy.notify = output_destroy;
 	wl_signal_add(&wlr_output->events.destroy, &destroy);
 
@@ -40,8 +29,6 @@ ZenithOutput::ZenithOutput(struct wlr_output* wlr_output)
 		return 0;
 	}, wlr_output);
 }
-
-static size_t i = 1;
 
 static std::unique_ptr<SwapChain<wlr_gles2_buffer>> create_swap_chain(wlr_output* wlr_output);
 
@@ -92,7 +79,7 @@ void output_frame(wl_listener* listener, void* data) {
 	clock_gettime(CLOCK_MONOTONIC, &now);
 	for (auto& [id, view]: server->xdg_toplevels) {
 		wlr_xdg_surface* xdg_surface = view->xdg_toplevel->base;
-		if (!xdg_surface->mapped || !view->visible) {
+		if (!xdg_surface->surface->mapped || !view->visible) {
 			// An unmapped view should not be rendered.
 			continue;
 		}

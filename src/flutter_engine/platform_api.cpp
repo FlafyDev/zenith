@@ -9,12 +9,6 @@
 #include "util/wlr/wlr_extensions.hpp"
 #include "pam/auth.hpp"
 
-extern "C" {
-#define static
-#include "wlr/types/wlr_seat.h"
-#include "wlr/types/wlr_xdg_shell.h"
-#undef static
-}
 
 void startup_complete(ZenithServer* server, const flutter::MethodCall<>& call,
                       std::unique_ptr<flutter::MethodResult<>>&& result) {
@@ -77,7 +71,7 @@ void pointer_exit(ZenithServer* server,
 	server->callable_queue.enqueue([server] {
 		wlr_seat_pointer_notify_clear_focus(server->seat);
 		if (server->pointer != nullptr && server->pointer->is_visible()) {
-			wlr_xcursor_manager_set_cursor_image(server->pointer->cursor_mgr, "left_ptr", server->pointer->cursor);
+			// wlr_xcursor_manager_set_cursor_image(server->pointer->cursor_mgr, "left_ptr", server->pointer->cursor);
 		}
 	});
 	result->Success();
@@ -96,7 +90,7 @@ void close_window(ZenithServer* server,
 			return;
 		}
 		ZenithXdgToplevel* view = view_it->second.get();
-		wlr_xdg_toplevel_send_close(view->xdg_toplevel->base);
+		wlr_xdg_toplevel_send_close(view->xdg_toplevel);
 	});
 	result->Success();
 }
@@ -116,7 +110,7 @@ void resize_window(ZenithServer* server,
 			return;
 		}
 		ZenithXdgToplevel* view = view_it->second.get();
-		wlr_xdg_toplevel_set_size(view->xdg_toplevel->base, (uint32_t) width, (uint32_t) height);
+		wlr_xdg_toplevel_set_size(view->xdg_toplevel, (uint32_t) width, (uint32_t) height);
 	});
 
 	result->Success();

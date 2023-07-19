@@ -1,10 +1,8 @@
 #pragma once
 
+#include "../wlr-includes.hpp"
 #include <memory>
 
-extern "C" {
-#include <wlr/types/wlr_buffer.h>
-}
 
 template<class T>
 struct SurfaceBufferChain {

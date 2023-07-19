@@ -1,4 +1,5 @@
 #pragma once
+#include "../wlr-includes.hpp"
 
 #include <platform_channels/binary_messenger.hpp>
 #include <platform_channels/incoming_message_dispatcher.hpp>
@@ -10,11 +11,6 @@
 #include "util/wlr/wlr_helpers.hpp"
 #include <GLES2/gl2.h>
 
-extern "C" {
-#define static
-#include <wlr/util/addon.h>
-#undef static
-}
 
 struct ZenithServer;
 

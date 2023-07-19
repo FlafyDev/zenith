@@ -1,10 +1,8 @@
 #pragma once
 
+#include "../wlr-includes.hpp"
 #include "zenith_xdg_surface.hpp"
 
-extern "C" {
-#include <wlr/types/wlr_xdg_shell.h>
-}
 
 struct ZenithXdgToplevel {
 	ZenithXdgToplevel(wlr_xdg_toplevel* xdg_toplevel,
@@ -15,7 +13,6 @@ struct ZenithXdgToplevel {
 	bool visible = true;
 
 	/* callbacks */
-	wl_listener request_fullscreen = {};
 	wl_listener request_move = {};
 	wl_listener request_resize = {};
 	wl_listener set_app_id = {};
@@ -27,8 +24,6 @@ struct ZenithXdgToplevel {
 
 	void resize(size_t width, size_t height) const;
 };
-
-void zenith_xdg_toplevel_request_fullscreen(wl_listener* listener, void* data);
 
 void zenith_xdg_toplevel_set_app_id(wl_listener* listener, void* data);
 

@@ -11,22 +11,23 @@ static int32_t device_id(int32_t touch_id) {
 ZenithTouchDevice::ZenithTouchDevice(ZenithServer* server, wlr_input_device* wlr_device)
 	  : server(server), wlr_device(wlr_device) {
 	touch_down.notify = touch_down_handle;
-	wl_signal_add(&wlr_device->touch->events.down, &touch_down);
+  auto* touch = wlr_touch_from_input_device(wlr_device);
+	wl_signal_add(&touch->events.down, &touch_down);
 
 	touch_motion.notify = touch_motion_handle;
-	wl_signal_add(&wlr_device->touch->events.motion, &touch_motion);
+	wl_signal_add(&touch->events.motion, &touch_motion);
 
 	touch_up.notify = touch_up_handle;
-	wl_signal_add(&wlr_device->touch->events.up, &touch_up);
+	wl_signal_add(&touch->events.up, &touch_up);
 
 	touch_cancel.notify = touch_cancel_handle;
-	wl_signal_add(&wlr_device->touch->events.cancel, &touch_cancel);
+	wl_signal_add(&touch->events.cancel, &touch_cancel);
 }
 
 void touch_down_handle(wl_listener* listener, void* data) {
 	ZenithTouchDevice* touch_device = wl_container_of(listener, touch_device, touch_down);
 	ZenithServer* server = touch_device->server;
-	auto* event = static_cast<wlr_event_touch_down*>(data);
+	auto* event = static_cast<wlr_touch_down_event*>(data);
 
 	// Hide cursor
 	if (server->pointer != nullptr) {
@@ -40,9 +41,10 @@ void touch_down_handle(wl_listener* listener, void* data) {
 	e.phase = kDown;
 	e.timestamp = current_time_microseconds();
 	// Map from [0, 1] to [output_width, output_height].
-	wlr_box* box = wlr_output_layout_get_box(server->output_layout, nullptr);
-	e.x = event->x * box->width;
-	e.y = event->y * box->height;
+  wlr_box box;
+	wlr_output_layout_get_box(server->output_layout, nullptr, &box);
+	e.x = event->x * box.width;
+	e.y = event->y * box.height;
 
 	touch_device->last_touch_coordinates[event->touch_id] = std::pair(event->x, event->y);
 
@@ -56,16 +58,17 @@ void touch_down_handle(wl_listener* listener, void* data) {
 void touch_motion_handle(wl_listener* listener, void* data) {
 	ZenithTouchDevice* touch_device = wl_container_of(listener, touch_device, touch_motion);
 	ZenithServer* server = touch_device->server;
-	auto* event = static_cast<wlr_event_touch_motion*>(data);
+	auto* event = static_cast<wlr_touch_motion_event*>(data);
 
 	FlutterPointerEvent e = {};
 	e.struct_size = sizeof(FlutterPointerEvent);
 	e.phase = kMove;
 
 	e.timestamp = current_time_microseconds();
-	wlr_box* box = wlr_output_layout_get_box(server->output_layout, nullptr);
-	e.x = event->x * box->width;
-	e.y = event->y * box->height;
+	wlr_box box;
+  wlr_output_layout_get_box(server->output_layout, nullptr, &box);
+	e.x = event->x * box.width;
+	e.y = event->y * box.height;
 
 	touch_device->last_touch_coordinates[event->touch_id] = std::pair(event->x, event->y);
 
@@ -79,16 +82,17 @@ void touch_motion_handle(wl_listener* listener, void* data) {
 void touch_up_handle(wl_listener* listener, void* data) {
 	ZenithTouchDevice* touch_device = wl_container_of(listener, touch_device, touch_up);
 	ZenithServer* server = touch_device->server;
-	auto* event = static_cast<wlr_event_touch_up*>(data);
+	auto* event = static_cast<wlr_touch_up_event*>(data);
 
 	FlutterPointerEvent e = {};
 	e.struct_size = sizeof(FlutterPointerEvent);
 	e.phase = kUp;
 
 	auto last_coordinates = touch_device->last_touch_coordinates[event->touch_id];
-	wlr_box* box = wlr_output_layout_get_box(server->output_layout, nullptr);
-	e.x = last_coordinates.first * box->width;
-	e.y = last_coordinates.second * box->height;
+	wlr_box box;
+  wlr_output_layout_get_box(server->output_layout, nullptr, &box);
+	e.x = last_coordinates.first * box.width;
+	e.y = last_coordinates.second * box.height;
 
 	e.timestamp = current_time_microseconds();
 	e.device_kind = kFlutterPointerDeviceKindTouch;
@@ -101,16 +105,17 @@ void touch_up_handle(wl_listener* listener, void* data) {
 void touch_cancel_handle(wl_listener* listener, void* data) {
 	ZenithTouchDevice* touch_device = wl_container_of(listener, touch_device, touch_cancel);
 	ZenithServer* server = touch_device->server;
-	auto* event = static_cast<wlr_event_touch_cancel*>(data);
+	auto* event = static_cast<wlr_touch_cancel_event*>(data);
 
 	FlutterPointerEvent e = {};
 	e.struct_size = sizeof(FlutterPointerEvent);
 	e.phase = kCancel;
 
 	auto last_coordinates = touch_device->last_touch_coordinates[event->touch_id];
-	wlr_box* box = wlr_output_layout_get_box(server->output_layout, nullptr);
-	e.x = last_coordinates.first * box->width;
-	e.y = last_coordinates.second * box->height;
+	wlr_box box;
+  wlr_output_layout_get_box(server->output_layout, nullptr, &box);
+	e.x = last_coordinates.first * box.width;
+	e.y = last_coordinates.second * box.height;
 
 	e.timestamp = current_time_microseconds();
 	e.device_kind = kFlutterPointerDeviceKindTouch;

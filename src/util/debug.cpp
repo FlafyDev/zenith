@@ -1,17 +1,9 @@
 #include <iostream>
 #include "debug.hpp"
-#include <epoxy/gl.h>
+// #include <epoxy/gl.h>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
-extern "C" {
-#include "stb_image_write.h"
-#include <wayland-util.h>
-#define static
-#include <wlr/types/wlr_surface.h>
-#include <wlr/types/wlr_xdg_shell.h>
-#undef static
-}
 
 void print_surface_tree_debug_info(wlr_surface* surface, int x, int y, int indents, wlr_subsurface* subsurface) {
 	auto indent = [indents]() {
@@ -42,9 +34,9 @@ void print_surface_tree_debug_info(wlr_surface* surface, int x, int y, int inden
 		          << std::endl;
 	}
 
-	if (wlr_surface_is_xdg_surface(surface)) {
+	if (wlr_xdg_surface_try_from_wlr_surface(surface)) {
 		indent();
-		wlr_xdg_surface* xdg_surface = wlr_xdg_surface_from_wlr_surface(surface);
+		wlr_xdg_surface* xdg_surface = wlr_xdg_surface_try_from_wlr_surface(surface);
 		std::cout << "xdg_surface -> "
 		          << "geom_x = " << xdg_surface->current.geometry.x
 		          << ", geom_y = " << xdg_surface->current.geometry.y
@@ -62,10 +54,10 @@ void print_surface_tree_debug_info(wlr_surface* surface, int x, int y, int inden
 		if (xdg_surface->role == WLR_XDG_SURFACE_ROLE_POPUP) {
 			indent();
 			std::cout << "xdg_popup -> "
-			          << "geom_x = " << xdg_surface->popup->geometry.x
-			          << ", geom_y = " << xdg_surface->popup->geometry.y
-			          << ", geom_width = " << xdg_surface->popup->geometry.width
-			          << ", geom_height = " << xdg_surface->popup->geometry.height
+			          << "geom_x = " << xdg_surface->popup->current.geometry.y
+			          << ", geom_y = " << xdg_surface->popup->current.geometry.y
+			          << ", geom_width = " << xdg_surface->popup->current.geometry.width
+			          << ", geom_height = " << xdg_surface->popup->current.geometry.height
 			          << std::endl;
 		}
 
@@ -77,7 +69,7 @@ void print_surface_tree_debug_info(wlr_surface* surface, int x, int y, int inden
 		struct wlr_xdg_popup* popup;
 		wl_list_for_each(popup, &xdg_surface->popups, link) {
 			wlr_xdg_surface* base = popup->base;
-			if (!base->mapped) {
+			if (!base->surface->mapped) {
 				continue;
 			}
 
@@ -92,7 +84,7 @@ void print_surface_tree_debug_info(wlr_surface* surface, int x, int y, int inden
 
 	struct wlr_subsurface* sub;
 	wl_list_for_each(sub, &surface->current.subsurfaces_below, current.link) {
-		if (!sub->mapped) {
+		if (!sub->surface->mapped) {
 			continue;
 		}
 
@@ -109,7 +101,7 @@ void print_surface_tree_debug_info(wlr_surface* surface, int x, int y, int inden
 	}
 
 	wl_list_for_each(sub, &surface->current.subsurfaces_above, current.link) {
-		if (!sub->mapped) {
+		if (!sub->surface->mapped) {
 			continue;
 		}
 
@@ -127,7 +119,7 @@ void print_surface_tree_debug_info(wlr_surface* surface, int x, int y, int inden
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 	auto* buf = new unsigned char[width * height * 4];
 	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf);
-	stbi_write_bmp(filename, width, height, 4, buf);
+	// stbi_write_bmp(filename, width, height, 4, buf);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_binding);
 	delete[] buf;
 }

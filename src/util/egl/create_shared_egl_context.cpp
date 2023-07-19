@@ -3,9 +3,6 @@
 #include <cstring>
 #include <iostream>
 
-extern "C" {
-#include <wlr/render/egl.h>
-}
 
 static const EGLint config_attribs[] = {
 	  EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
@@ -28,7 +25,7 @@ struct wlr_egl* create_shared_egl_context(struct wlr_egl* egl) {
 
 	EGLConfig egl_config;
 	EGLint matched = 0;
-	if (!eglChooseConfig(egl->display, config_attribs, &egl_config, 1, &matched)) {
+	if (!eglChooseConfig(wlr_egl_get_display(egl), config_attribs, &egl_config, 1, &matched)) {
 		std::cerr << "eglChooseConfig failed" << std::endl;
 		return nullptr;
 	}
@@ -37,7 +34,7 @@ struct wlr_egl* create_shared_egl_context(struct wlr_egl* egl) {
 		return nullptr;
 	}
 
-	EGLContext shared_egl_context = eglCreateContext(egl->display, egl_config, egl->context, context_attribs);
+	EGLContext shared_egl_context = eglCreateContext(wlr_egl_get_display(egl), egl_config, wlr_egl_get_context(egl), context_attribs);
 	if (shared_egl_context == EGL_NO_CONTEXT) {
 		std::cerr << "Failed to create EGL context" << std::endl;
 		return nullptr;

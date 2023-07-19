@@ -220,8 +220,8 @@ void EmbedderState::register_platform_api() {
 						  if (iter != g_cursor_image_mapping.end()) {
 							  cursor = iter->second;
 						  }
-						  wlr_xcursor_manager_set_cursor_image(server->pointer->cursor_mgr, cursor,
-						                                       server->pointer->cursor);
+						  // wlr_xcursor_manager_set_cursor_image(server->pointer->cursor_mgr, cursor,
+						                                       // server->pointer->cursor);
 					  }
 				  });
 				  result->Success();
@@ -281,7 +281,7 @@ void EmbedderState::send_key_event(const KeyboardKeyEventMessage& message) {
 			}
 		}
 
-		wlr_event_keyboard_key event_copy = message.event;
+		wlr_keyboard_key_event event_copy = message.event;
 		key_event_channel->Send(json, [event_copy](const uint8_t* reply, size_t reply_size) {
 			auto message = flutter::JsonMessageCodec::GetInstance().DecodeMessage(reply, reply_size);
 			auto& handled_object = message->GetObject()["handled"];
@@ -419,6 +419,24 @@ void EmbedderState::commit_surface(const SurfaceCommitMessage& message) {
 
 		auto value = std::make_unique<EncodableValue>(map);
 		platform_method_channel->InvokeMethod("commit_surface", std::move(value));
+	});
+}
+
+void EmbedderState::map_xwayland_surface(size_t view_id) {
+	callable_queue.enqueue([=] {
+		auto value = std::make_unique<EncodableValue>(EncodableMap{
+			  {EncodableValue("view_id"), EncodableValue((int64_t) view_id)},
+		});
+		platform_method_channel->InvokeMethod("map_xwayland_surface", std::move(value));
+	});
+}
+
+void EmbedderState::unmap_xwayland_surface(size_t view_id) {
+	callable_queue.enqueue([=] {
+		auto value = std::make_unique<EncodableValue>(EncodableMap{
+			  {EncodableValue("view_id"), EncodableValue((int64_t) view_id)},
+		});
+		platform_method_channel->InvokeMethod("unmap_xwayland_surface", std::move(value));
 	});
 }
 

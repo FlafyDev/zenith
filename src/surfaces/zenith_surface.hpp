@@ -1,8 +1,6 @@
 #pragma once
 
-extern "C" {
-#include <wlr/types/wlr_xdg_shell.h>
-}
+#include "../wlr-includes.hpp"
 
 struct ZenithTextInput;
 

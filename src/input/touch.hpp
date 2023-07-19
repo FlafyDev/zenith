@@ -1,11 +1,6 @@
 #pragma once
 
-extern "C" {
-#define static
-#include "wlr/types/wlr_input_device.h"
-#include "wlr/types/wlr_touch.h"
-#undef static
-}
+#include "../wlr-includes.hpp"
 
 struct ZenithServer;
 

@@ -1,15 +1,10 @@
 #pragma once
+#include "wlr-includes.hpp"
 
 #include <memory>
 #include <thread>
 #include "util/time.hpp"
 
-extern "C" {
-#include <wlr/render/allocator.h>
-#define static
-#include <wlr/render/gles2.h>
-#undef static
-}
 
 template<class T>
 Slot<T>::Slot(std::shared_ptr<T> buffer) : buffer{buffer} {

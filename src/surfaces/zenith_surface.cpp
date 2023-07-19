@@ -1,3 +1,4 @@
+#include "../wlr-includes.hpp"
 #include <sys/ioctl.h>
 #include <xf86drm.h>
 #include <unistd.h>
@@ -6,16 +7,9 @@
 #include "util/wlr/xdg_surface_get_visible_bounds.hpp"
 #include "util/wlr/scoped_wlr_buffer.hpp"
 #include "util/egl/egl_extensions.hpp"
+#include <dma-buf.h>
 #include <EGL/eglext.h>
 
-extern "C" {
-#include <linux/dma-buf.h>
-
-#define static
-#include <wlr/types/wlr_xdg_shell.h>
-#include <wlr/render/gles2.h>
-#undef static
-}
 
 static size_t next_view_id = 1;
 
@@ -56,10 +50,12 @@ void zenith_surface_commit(wl_listener* listener, void* data) {
 	commit_message->view_id = zenith_surface->id;
 
 	SurfaceRole role;
-	if (wlr_surface_is_xdg_surface(surface)) {
+	if (wlr_xdg_surface_try_from_wlr_surface(surface)) {
 		role = SurfaceRole::XDG_SURFACE;
-	} else if (wlr_surface_is_subsurface(surface)) {
+	} else if (wlr_subsurface_try_from_wlr_surface(surface)) {
 		role = SurfaceRole::SUBSURFACE;
+  // } else if (wlr_xwayland_surface_try_from_wlr_surface(surface)) {
+  //   role = SurfaceRole::XWAYLAND_SURFACE;
 	} else {
 		role = SurfaceRole::NONE;
 	}
@@ -67,8 +63,8 @@ void zenith_surface_commit(wl_listener* listener, void* data) {
 	commit_message->surface = {
 		  .role = role,
 		  .texture_id = (int) zenith_surface->id,
-		  .x = surface->sx,
-		  .y = surface->sy,
+		  .x = surface->current.dx,
+		  .y = surface->current.dy,
 		  .width = surface->current.width,
 		  .height = surface->current.height,
 		  .scale = surface->current.scale,
@@ -102,7 +98,7 @@ void zenith_surface_commit(wl_listener* listener, void* data) {
 	commit_message->subsurfaces_above = std::move(above);
 
 	if (role == SurfaceRole::XDG_SURFACE) {
-		wlr_xdg_surface* xdg_surface = wlr_xdg_surface_from_wlr_surface(surface);
+		wlr_xdg_surface* xdg_surface = wlr_xdg_surface_try_from_wlr_surface(surface);
 		wlr_box visible_bounds = xdg_surface_get_visible_bounds(xdg_surface);
 		commit_message->xdg_surface = {
 			  .role = xdg_surface->role,
@@ -131,14 +127,14 @@ void zenith_surface_commit(wl_listener* listener, void* data) {
 				wlr_xdg_popup* popup = xdg_surface->popup;
 				int64_t parent_id;
 				if (popup->parent != nullptr) {
-					assert(wlr_surface_is_xdg_surface(popup->parent));
+					assert(wlr_xdg_surface_try_from_wlr_surface(popup->parent));
 					auto* parent = static_cast<ZenithSurface*>(popup->parent->data);
 					parent_id = (int64_t) parent->id;
 				} else {
 					parent_id = 0;
 				}
 
-				const wlr_box& geometry = popup->geometry;
+				const wlr_box& geometry = popup->current.geometry;
 				commit_message->xdg_popup = {
 					  .parent_id = parent_id,
 					  .x = geometry.x,
@@ -151,7 +147,9 @@ void zenith_surface_commit(wl_listener* listener, void* data) {
 			case WLR_XDG_SURFACE_ROLE_NONE:
 				break;
 		}
-	}
+	} else if (role == SurfaceRole::XWAYLAND_SURFACE) {
+    commit_message->xwayland_surface = { };
+  }
 
 	std::shared_ptr<wlr_buffer> scoped_buffer = nullptr;
 	int wait_for_fd = -1;
@@ -176,7 +174,7 @@ void zenith_surface_commit(wl_listener* listener, void* data) {
 			int fence_fd = extract_fd_from_native_fence(&sync);
 			if (fence_fd != -1 && sync != nullptr) {
 				wlr_egl* egl = wlr_gles2_renderer_get_egl(ZenithServer::instance()->renderer);
-				EGLDisplay egl_display = egl->display;
+				EGLDisplay egl_display = wlr_egl_get_display(egl);
 				scoped_buffer = scoped_wlr_buffer(buffer, [fence_fd, egl_display, sync](
 					  wlr_buffer* buffer) {
 					eglDestroySyncKHR(egl_display, sync);
@@ -239,13 +237,14 @@ int extract_fd_from_native_fence(EGLSyncKHR* sync_out) {
 	};
 
 	wlr_egl* egl = wlr_gles2_renderer_get_egl(ZenithServer::instance()->renderer);
-	wlr_egl_make_current(egl);
+  wlr_egl_make_current(egl);
+	// wlr_egl_make_current
 
-	EGLSyncKHR sync = eglCreateSyncKHR(egl->display, EGL_SYNC_NATIVE_FENCE_ANDROID, attrib_list);
+	EGLSyncKHR sync = eglCreateSyncKHR(wlr_egl_get_display(egl), EGL_SYNC_NATIVE_FENCE_ANDROID, attrib_list);
 
 	auto error = [&] {
 		if (sync != EGL_NO_SYNC_KHR) {
-			eglDestroySyncKHR(egl->display, sync);
+			eglDestroySyncKHR(wlr_egl_get_display(egl), sync);
 		}
 		*sync_out = EGL_NO_SYNC_KHR;
 		return -1;
@@ -256,7 +255,7 @@ int extract_fd_from_native_fence(EGLSyncKHR* sync_out) {
 	}
 	glFlush();
 
-	int fence_fd = eglDupNativeFenceFDANDROID(egl->display, sync);
+	int fence_fd = eglDupNativeFenceFDANDROID(wlr_egl_get_display(egl), sync);
 	if (fence_fd == EGL_NO_NATIVE_FENCE_FD_ANDROID) {
 		return error();
 	}

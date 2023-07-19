@@ -4,14 +4,13 @@
 #include <GLES2/gl2ext.h>
 #include <libdrm/drm_fourcc.h>
 
-extern "C" {
-#define static
-#include <wlr/util/log.h>
-#include <wlr/render/drm_format_set.h>
-#include <wlr/render/egl.h>
-#include <wlr/render/allocator.h>
-#include <wlr/render/interface.h>
-#undef static
+static void load_egl_proc(void *proc_ptr, const char *name) {
+	void *proc = (void *)eglGetProcAddress(name);
+	if (proc == NULL) {
+		wlr_log(WLR_ERROR, "eglGetProcAddress(%s) failed", name);
+		abort();
+	}
+	*(void **)proc_ptr = proc;
 }
 
 struct wlr_drm_format* get_output_format(wlr_output* output) {
@@ -28,6 +27,22 @@ struct wlr_drm_format* get_output_format(wlr_output* output) {
 		return nullptr;
 	}
 	return format;
+}
+
+bool wlr_egl_make_current(struct wlr_egl *egl) {
+	if (!eglMakeCurrent(wlr_egl_get_display(egl), EGL_NO_SURFACE, EGL_NO_SURFACE, wlr_egl_get_context(egl))) {
+		wlr_log(WLR_ERROR, "eglMakeCurrent failed");
+		return false;
+	}
+	return true;
+}
+
+bool wlr_egl_unset_current(struct wlr_egl *egl) {
+	if (!eglMakeCurrent(wlr_egl_get_display(egl), EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
+		wlr_log(WLR_ERROR, "eglMakeCurrent failed");
+		return false;
+	}
+	return true;
 }
 
 struct wlr_drm_format*
@@ -232,7 +247,8 @@ static void destroy_buffer(struct wlr_gles2_buffer* buffer) {
 
 	struct wlr_egl_context prev_ctx;
 	wlr_egl_save_context(&prev_ctx);
-	wlr_egl_make_current(buffer->renderer->egl);
+
+  wlr_egl_make_current(buffer->renderer->egl);
 
 	push_gles2_debug(buffer->renderer);
 
@@ -403,7 +419,7 @@ wlr_egl_create_image_from_dmabuf(struct wlr_egl* egl, struct wlr_dmabuf_attribut
 	attribs[atti++] = EGL_NONE;
 	assert(atti < sizeof(attribs) / sizeof(attribs[0]));
 
-	EGLImageKHR image = egl->procs.eglCreateImageKHR(egl->display, EGL_NO_CONTEXT,
+	EGLImageKHR image = egl->procs.eglCreateImageKHR(wlr_egl_get_display(egl), EGL_NO_CONTEXT,
 	                                                 EGL_LINUX_DMA_BUF_EXT, NULL, attribs);
 	if (image == EGL_NO_IMAGE_KHR) {
 		wlr_log(WLR_ERROR, "eglCreateImageKHR failed");
@@ -422,5 +438,5 @@ bool wlr_egl_destroy_image(struct wlr_egl* egl, EGLImage image) {
 	if (!image) {
 		return true;
 	}
-	return egl->procs.eglDestroyImageKHR(egl->display, image);
+  return egl->procs.eglDestroyImageKHR(wlr_egl_get_display(egl), image);
 }

@@ -9,10 +9,10 @@ ZenithXdgSurface::ZenithXdgSurface(wlr_xdg_surface* xdg_surface, std::shared_ptr
 	wl_signal_add(&xdg_surface->events.destroy, &destroy);
 
 	map.notify = zenith_xdg_surface_map;
-	wl_signal_add(&xdg_surface->events.map, &map);
+	wl_signal_add(&xdg_surface->surface->events.map, &map);
 
 	unmap.notify = zenith_xdg_surface_unmap;
-	wl_signal_add(&xdg_surface->events.unmap, &unmap);
+	wl_signal_add(&xdg_surface->surface->events.unmap, &unmap);
 }
 
 void zenith_xdg_surface_create(wl_listener* listener, void* data) {
@@ -31,6 +31,7 @@ void zenith_xdg_surface_create(wl_listener* listener, void* data) {
 			ASSERT(false, "unreachable");
 			break;
 		case WLR_XDG_SURFACE_ROLE_TOPLEVEL: {
+			wlr_xdg_toplevel_set_maximized(xdg_surface->toplevel, true);
 			auto toplevel = new ZenithXdgToplevel(xdg_surface->toplevel, zenith_xdg_surface_ref);
 			server->xdg_toplevels.insert(std::make_pair(zenith_surface->id, toplevel));
 			break;

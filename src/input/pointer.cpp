@@ -6,11 +6,6 @@
 #include "server.hpp"
 #include "util/time.hpp"
 
-extern "C" {
-#define static
-#include "wlr/types/wlr_pointer.h"
-#undef static
-}
 
 ZenithPointer::ZenithPointer(ZenithServer* server)
 	  : server(server) {
@@ -59,7 +54,7 @@ ZenithPointer::ZenithPointer(ZenithServer* server)
 void server_cursor_motion(wl_listener* listener, void* data) {
 	ZenithPointer* pointer = wl_container_of(listener, pointer, cursor_motion);
 	ZenithServer* server = pointer->server;
-	auto* event = static_cast<wlr_event_pointer_motion*>(data);
+	auto* event = static_cast<wlr_pointer_motion_event*>(data);
 
 	if (server->output == nullptr) {
 		return;
@@ -72,7 +67,7 @@ void server_cursor_motion(wl_listener* listener, void* data) {
 	 * special configuration applied for the specific input device which
 	 * generated the event. You can pass NULL for the device if you want to move
 	 * the cursor around without any input. */
-	wlr_cursor_move(pointer->cursor, event->device, event->delta_x, event->delta_y);
+	wlr_cursor_move(pointer->cursor, &event->pointer->base, event->delta_x, event->delta_y);
 
 	FlutterPointerEvent e = {};
 	e.struct_size = sizeof(FlutterPointerEvent);
@@ -89,7 +84,7 @@ void server_cursor_motion(wl_listener* listener, void* data) {
 void server_cursor_motion_absolute(wl_listener* listener, void* data) {
 	ZenithPointer* pointer = wl_container_of(listener, pointer, cursor_motion_absolute);
 	ZenithServer* server = pointer->server;
-	auto* event = static_cast<wlr_event_pointer_motion_absolute*>(data);
+	auto* event = static_cast<wlr_pointer_motion_absolute_event*>(data);
 
 	if (server->output == nullptr) {
 		return;
@@ -97,7 +92,7 @@ void server_cursor_motion_absolute(wl_listener* listener, void* data) {
 
 	pointer->set_visible(true);
 
-	wlr_cursor_warp_absolute(pointer->cursor, event->device, event->x, event->y);
+	wlr_cursor_warp_absolute(pointer->cursor, &event->pointer->base, event->x, event->y);
 
 	FlutterPointerEvent e = {};
 	e.struct_size = sizeof(FlutterPointerEvent);
@@ -116,7 +111,7 @@ void server_cursor_motion_absolute(wl_listener* listener, void* data) {
 void server_cursor_button(wl_listener* listener, void* data) {
 	ZenithPointer* pointer = wl_container_of(listener, pointer, cursor_button);
 	ZenithServer* server = pointer->server;
-	auto* event = static_cast<wlr_event_pointer_button*>(data);
+	auto* event = static_cast<wlr_pointer_button_event*>(data);
 
 	if (server->output == nullptr) {
 		return;
@@ -159,7 +154,7 @@ void server_cursor_button(wl_listener* listener, void* data) {
 void server_cursor_axis(wl_listener* listener, void* data) {
 	ZenithPointer* pointer = wl_container_of(listener, pointer, cursor_axis);
 	ZenithServer* server = pointer->server;
-	auto* event = static_cast<wlr_event_pointer_axis*>(data);
+	auto* event = static_cast<wlr_pointer_axis_event*>(data);
 
 	if (server->output == nullptr) {
 		return;

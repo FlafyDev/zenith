@@ -30,6 +30,13 @@ class CompositorNotifier extends StateNotifier<Compositor> {
           case "unmap_xdg_surface":
             unmapXdgSurface(state.surfacesState[args["view_id"] as int]!);
             break;
+          case "map_xwayland_surface":
+            print("hey");
+            // mapXWaylandSurface(state.surfacesState[args["view_id"] as int]!);
+            break;
+          case "unmap_xwayland_surface":
+            // unmapXWaylandSurface(state.surfacesState[args["view_id"] as int]!);
+            break;
           case "map_subsurface":
             mapSubsurface(args["view_id"] as int);
             break;

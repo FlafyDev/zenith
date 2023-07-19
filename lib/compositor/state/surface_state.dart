@@ -9,6 +9,7 @@ enum SurfaceRole {
   none,
   xdgSurface,
   subsurface,
+  xwaylandSurface,
 }
 
 @freezed

@@ -133,7 +133,7 @@ class __$$_CompositorCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$_Compositor implements _Compositor {
+class _$_Compositor with DiagnosticableTreeMixin implements _Compositor {
   const _$_Compositor(
       {required final Map<int, SurfaceCommitState> surfacesState,
       required final List<int> mappedXdgTopLevels,
@@ -179,8 +179,19 @@ class _$_Compositor implements _Compositor {
   }
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'Compositor(surfacesState: $surfacesState, mappedXdgTopLevels: $mappedXdgTopLevels, mappedXdgPopups: $mappedXdgPopups, mappedSubsurfaces: $mappedSubsurfaces)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'Compositor'))
+      ..add(DiagnosticsProperty('surfacesState', surfacesState))
+      ..add(DiagnosticsProperty('mappedXdgTopLevels', mappedXdgTopLevels))
+      ..add(DiagnosticsProperty('mappedXdgPopups', mappedXdgPopups))
+      ..add(DiagnosticsProperty('mappedSubsurfaces', mappedSubsurfaces));
   }
 
   @override

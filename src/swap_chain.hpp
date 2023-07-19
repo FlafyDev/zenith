@@ -1,4 +1,5 @@
 #pragma once
+#include "wlr-includes.hpp"
 
 #include <memory>
 #include <vector>
@@ -6,9 +7,6 @@
 #include "util/array_view.hpp"
 #include "third_party/embedder.h"
 
-extern "C" {
-#include <wlr/types/wlr_buffer.h>
-}
 
 template<class T>
 struct Slot {

@@ -1,16 +1,11 @@
 /// Backported functionality from newer versions of wlroots.
+#include "../wlr-includes.hpp"
 
 #include "wlr_extensions.hpp"
 #include <wayland-client-protocol.h>
 #include <wayland-server-protocol.h>
 #include <wayland-server-core.h>
 
-extern "C" {
-#define static
-#include <wlr/types/wlr_seat.h>
-#include <wlr/types/wlr_surface.h>
-#undef static
-}
 
 // Copied from wlroots.
 static struct wlr_seat_client* seat_client_from_touch_resource(struct wl_resource* resource) {

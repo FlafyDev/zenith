@@ -1,11 +1,9 @@
 #pragma once
+#include "../wlr-includes.hpp"
 
 #include <memory>
 #include "zenith_surface.hpp"
 
-extern "C" {
-#include <wlr/types/wlr_xdg_shell.h>
-}
 
 
 struct ZenithSubsurface {

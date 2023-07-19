@@ -1,11 +1,9 @@
 #pragma once
 
+#include "../wlr-includes.hpp"
 #include <memory>
 #include "util/wlr/wlr_helpers.hpp"
 
-extern "C" {
-#include <wlr/types/wlr_buffer.h>
-}
 
 using Deleter = std::function<void(wlr_buffer* buffer)>;
 static Deleter empty_deleter = [](wlr_buffer* buffer) {};

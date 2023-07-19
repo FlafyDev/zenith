@@ -1,9 +1,6 @@
 #pragma once
 
-extern "C" {
-#include <wlr/util/box.h>
-#include <wlr/types/wlr_xdg_shell.h>
-}
+#include "../wlr-includes.hpp"
 
 // Gets the visible bounds of an xdg_surface.
 // Doesn't take subsurfaces into account, which means that subsurfaces extending outside the

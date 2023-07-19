@@ -1,15 +1,9 @@
 #pragma once
 
+#include "../wlr-includes.hpp"
 #include <queue>
 #include "util/embedder/mouse_button_tracker.hpp"
 
-extern "C" {
-#include "wlr/types/wlr_cursor.h"
-#include "wlr/types/wlr_pointer.h"
-#define static
-#include "wlr/types/wlr_xcursor_manager.h"
-#undef static
-}
 
 struct ZenithServer;
 
@@ -41,7 +35,7 @@ public:
 		}
 		visible = value;
 		if (visible) {
-			wlr_xcursor_manager_set_cursor_image(cursor_mgr, "left_ptr", cursor);
+			// wlr_xcursor_manager_set_cursor_image(cursor_mgr, "left_ptr", cursor);
 		} else {
 			wlr_cursor_set_surface(cursor, nullptr, 0, 0);
 		}

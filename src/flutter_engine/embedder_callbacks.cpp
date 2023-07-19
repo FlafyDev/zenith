@@ -3,18 +3,12 @@
 #include "server.hpp"
 #include "util/rect.hpp"
 
-extern "C" {
-#include <GLES3/gl3.h>
-#define static
-#include <wlr/render/egl.h>
-#include <wlr/render/gles2.h>
-#undef static
-}
 
 #include <cassert>
 #include <iostream>
 #include <sys/eventfd.h>
 #include <unistd.h>
+#include <GL/gl.h>
 
 bool flutter_make_current(void* userdata) {
 	auto* state = static_cast<EmbedderState*>(userdata);

@@ -1,13 +1,18 @@
 #pragma once
 
+#include "../wlr-includes.hpp"
 #include <cstdint>
 #include <pixman-1/pixman.h>
 #include <vector>
 #include <optional>
 
-extern "C" {
-#include <wlr/types/wlr_xdg_shell.h>
-}
+
+struct XWaylandSurfaceCommitMessage {
+	// wlr_xdg_surface_role role;
+	// /* Visible bounds */
+	// int x, y;
+	// int width, height;
+};
 
 struct XdgSurfaceCommitMessage {
 	wlr_xdg_surface_role role;
@@ -27,6 +32,7 @@ enum class SurfaceRole {
 	NONE = 0,
 	XDG_SURFACE = 1,
 	SUBSURFACE = 2,
+  XWAYLAND_SURFACE = 3,
 };
 
 struct SubsurfaceParentState {
@@ -54,6 +60,7 @@ struct SurfaceCommitMessage {
 	std::vector<SubsurfaceParentState> subsurfaces_below;
 	std::vector<SubsurfaceParentState> subsurfaces_above;
 	std::optional<XdgSurfaceCommitMessage> xdg_surface;
+	std::optional<XWaylandSurfaceCommitMessage> xwayland_surface;
 	std::optional<XdgPopupCommitMessage> xdg_popup;
 	std::optional<ToplevelDecoration> toplevel_decoration;
 	std::optional<std::string> toplevel_title;
@@ -67,7 +74,7 @@ enum class TextInputEventType {
 };
 
 struct KeyboardKeyEventMessage {
-	wlr_event_keyboard_key event;
+	wlr_keyboard_key_event event;
 	xkb_keycode_t scan_code;
 	xkb_keysym_t keysym;
 	uint32_t modifiers;

@@ -1,4 +1,5 @@
 #pragma once
+#include "../wlr-includes.hpp"
 
 #include <mutex>
 #include "embedder.h"
@@ -12,9 +13,6 @@
 #include "util/rethreading/callable_queue.hpp"
 #include "message_structs.hpp"
 
-extern "C" {
-#include <wlr/render/egl.h>
-}
 
 struct ZenithServer;
 
@@ -42,6 +40,10 @@ struct EmbedderState {
 	void mark_external_texture_frame_available(int64_t id);
 
 	void commit_surface(const SurfaceCommitMessage& message);
+
+	void map_xwayland_surface(size_t view_id);
+
+	void unmap_xwayland_surface(size_t view_id);
 
 	void map_xdg_surface(size_t view_id);
 

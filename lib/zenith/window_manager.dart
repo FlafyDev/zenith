@@ -43,10 +43,13 @@ class WindowManager extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final positions = useValueNotifier<Map<int, Offset>>({});
+    final sizes = useValueNotifier<Map<int, Size>>({});
+
     final orderedTopLevels = ref.watch(orderedTopLevelsProvider);
     final popups =
         ref.watch(compositorProvider.select((e) => e.mappedXdgPopups));
 
+    /// On TopLevel add/remove
     ref.listen<List<int>?>(
         compositorProvider.select((e) => e.mappedXdgTopLevels), (prev, next) {
       final newTopLevels =
@@ -54,16 +57,19 @@ class WindowManager extends HookConsumerWidget {
       final removedTopLevels = prev!.where((e) => !next.contains(e));
       for (final id in newTopLevels) {
         positions.value = {...positions.value, id: const Offset(100, 100)};
+        sizes.value = {...sizes.value, id: const Size(200, 200)};
         ref.read(orderedTopLevelsProvider.notifier).update((s) => [...s, id]);
       }
       for (final id in removedTopLevels) {
         positions.value = {...positions.value}..remove(id);
+        sizes.value = {...sizes.value}..remove(id);
         ref
             .read(orderedTopLevelsProvider.notifier)
             .update((s) => [...s]..remove(id));
       }
     });
 
+    /// On active TopLevel change
     ref.listen<int?>(activeTopLevelProvider, (prev, id) {
       if (id == null) {
         ref
@@ -80,94 +86,104 @@ class WindowManager extends HookConsumerWidget {
         ..add(id));
     });
 
-    final tops =
-        ref.read(compositorProvider.select((e) => e.mappedXdgTopLevels));
-    final pops = ref.read(compositorProvider.select((e) => e.mappedXdgPopups));
+    // final tops =
+    //     ref.read(compositorProvider.select((e) => e.mappedXdgTopLevels));
+    // final pops = ref.read(compositorProvider.select((e) => e.mappedXdgPopups));
 
     // if (tops.isNotEmpty && pops.isNotEmpty) {
     //   print(
     //       'xdgsurfaces - popupsurfaces: ${ref.read(compositorProvider.select((e) => e.surfacesState[tops.first]!.xdgSurface))} --- ${ref.read(compositorProvider.select((e) => e.surfacesState[pops.first]!.xdgSurface))}');
     // }
-    print(positions);
+    // print(positions);
 
     return Stack(
       children: [
-        Positioned(
-          width: 1000,
-          height: 800,
-          child: Stack(
-            children: [
-              ...orderedTopLevels.map(
-                (id) => ValueListenableBuilder<Map<int, Offset>>(
-                  key: ValueKey(id),
-                  valueListenable: positions,
-                  builder: (context, positionsVal, child) {
-                    return _TopLevel(
-                      id: id,
-                      offset: positionsVal[id] ?? Offset.zero,
-                    );
-                  },
-                ),
-              ),
-              ...popups.map(
-                (id) => Consumer(
-                  builder: (context, ref, child) {
-                    final parentId = ref.watch(compositorProvider.select(
-                        (e) => e.surfacesState[id]!.xdgPopup!.parentId));
-                    final offset = positions.value[parentId];
-                    final xdgSurfaceRect = ref.watch(compositorProvider
-                        .select((e) => e.surfacesState[id]!.xdgSurface!.rect));
-                    final xdgPopupRect = ref.watch(compositorProvider
-                        .select((e) => e.surfacesState[id]!.xdgPopup!.rect));
-                    final surfaceRect = ref.watch(compositorProvider
-                        .select((e) => e.surfacesState[id]!.surface.rect));
-                    return Positioned(
-                      left: (offset?.dx ?? 0) +
-                          xdgPopupRect.left -
-                          xdgSurfaceRect.left,
-                      top: (offset?.dy ?? 0) +
-                          xdgPopupRect.top -
-                          xdgSurfaceRect.top,
-                      width: surfaceRect.width,
-                      height: surfaceRect.height,
-                      child: Surface(
-                        viewId: id,
-                        // onEnter: (_) {
-                        //   ref.read(activeTopLevelProvider.notifier).state = viewId;
-                        // },
-                      ),
-                    );
-                  },
-                ),
-              ),
-              Positioned.fill(
-                child: Center(
-                  child: TextButton(
-                    onPressed: () async {
-                      Process.run('nautilus', []);
-
-                      await Future.delayed(Duration(seconds: 3));
-
-                      final viewId = ref.read(compositorProvider
-                          .select((e) => e.surfacesState.keys.last));
-                      print(ref.read(compositorProvider
-                          .select((e) => e.surfacesState.keys.length)));
-                      // positions.value = {
-                      //   ...positions.value,
-                      //   viewId: Offset(200 + Random().nextDouble() * 300,
-                      //       200 + Random().nextDouble() * 300)
-                      // };
-                      await ref
-                          .read(compositorProvider.notifier)
-                          .resizeWindow(viewId, 300, 300);
-                    },
-                    child: Text('Run foot'),
-                  ),
-                ),
-              )
-            ],
+        ...orderedTopLevels.map(
+          (id) => ValueListenableBuilder<Map<int, Offset>>(
+            key: ValueKey(id),
+            valueListenable: positions,
+            builder: (context, positionsVal, child) {
+              return ValueListenableBuilder<Map<int, Size>>(
+                valueListenable: sizes,
+                builder: (context, sizesVal, child) {
+                  return _TopLevel(
+                    id: id,
+                    offset: positionsVal[id] ?? Offset.zero,
+                    size: sizesVal[id] ?? Size.zero,
+                  );
+                }
+              );
+            },
           ),
         ),
+        ...popups.map(
+          (id) => Consumer(
+            builder: (context, ref, child) {
+              final parentId = ref.watch(compositorProvider
+                  .select((e) => e.surfacesState[id]!.xdgPopup!.parentId));
+              final offset = positions.value[parentId];
+              final xdgSurfaceRect = ref.watch(compositorProvider
+                  .select((e) => e.surfacesState[id]!.xdgSurface!.rect));
+              final xdgPopupRect = ref.watch(compositorProvider
+                  .select((e) => e.surfacesState[id]!.xdgPopup!.rect));
+              final surfaceRect = ref.watch(compositorProvider
+                  .select((e) => e.surfacesState[id]!.surface.rect));
+              return Positioned(
+                left:
+                    (offset?.dx ?? 0) + xdgPopupRect.left - xdgSurfaceRect.left,
+                top: (offset?.dy ?? 0) + xdgPopupRect.top - xdgSurfaceRect.top,
+                width: surfaceRect.width,
+                height: surfaceRect.height,
+                child: Surface(
+                  viewId: id,
+                  // onEnter: (_) {
+                  //   ref.read(activeTopLevelProvider.notifier).state = viewId;
+                  // },
+                ),
+              );
+            },
+          ),
+        ),
+        Positioned.fill(
+          child: Center(
+            child: TextButton(
+              onPressed: () async {
+                Process.run('foot', []);
+
+                await Future.delayed(Duration(seconds: 1));
+
+                final viewId = ref.read(compositorProvider
+                    .select((e) => e.surfacesState.keys.lastWhere((element) => e.surfacesState[element]?.toplevelAppId != null)));
+                // print(ref.read(compositorProvider
+                //     .select((e) => e.surfacesState.keys.length)));
+                positions.value = {
+                  ...positions.value,
+                  viewId: Offset(200, 200)
+                };
+                sizes.value = {
+                  ...sizes.value,
+                  viewId: Size(100, 300)
+                };
+                // await ref
+                //     .read(compositorProvider.notifier)
+                //     .resizeWindow(viewId, 100, 300);
+                await Future.delayed(Duration(seconds: 1));
+                positions.value = {
+                  ...positions.value,
+                  viewId: Offset(200 - 100 / 2, 200 + 100 / 2)
+                };
+                sizes.value = {
+                  ...sizes.value,
+                  viewId: Size(200, 200)
+                };
+                // await ref
+                //     .read(compositorProvider.notifier)
+                //     .resizeWindow(viewId, 200, 200);
+              },
+              child: Text('Run nautilus'),
+            ),
+          ),
+        )
       ],
     );
   }
@@ -178,10 +194,12 @@ class _TopLevel extends HookConsumerWidget {
     super.key,
     required this.id,
     required this.offset,
+    required this.size,
   });
 
   final int id;
   final Offset offset;
+  final Size size;
 
   @override
   Widget build(context, ref) {
@@ -189,16 +207,14 @@ class _TopLevel extends HookConsumerWidget {
         .select((e) => e.surfacesState[id]!.xdgSurface!.rect));
     final surfaceSize = ref.watch(compositorProvider
         .select((e) => e.surfacesState[id]!.surface.rect.size));
-    // final active =
-    //     ref.watch(activeTopLevelProvider.select((activeId) => activeId == id));
 
     // Offset
     final offsetAC =
-        useAnimationController(duration: const Duration(milliseconds: 3000));
+        useAnimationController(duration: const Duration(milliseconds: 200));
     final offsetTween = useRef(Tween<Offset>(begin: offset, end: offset));
     useEffect(() {
       offsetTween.value = Tween(
-        begin: offsetTween.value.transform(offsetAC.value),
+        begin: offsetTween.value.transform(Curves.easeInOut.transform(offsetAC.value)),
         end: offset,
       );
       offsetAC.reset();
@@ -208,84 +224,107 @@ class _TopLevel extends HookConsumerWidget {
 
     // Size
     final sizeAC =
-        useAnimationController(duration: const Duration(milliseconds: 3000));
-    final sizeTween = useRef(Tween<Size>(begin: surfaceSize, end: surfaceSize));
+        useAnimationController(duration: const Duration(milliseconds: 200));
+    final sizeTween = useRef(Tween<Size>(begin: size, end: size));
     useEffect(() {
+      ref
+          .read(compositorProvider.notifier)
+          .resizeWindow(id, size.width.round(), size.height.round());
       sizeTween.value = Tween(
-        begin: sizeTween.value.transform(sizeAC.value),
-        end: surfaceSize,
+        begin: sizeTween.value.transform(Curves.easeInOut.transform(sizeAC.value)),
+        end: size,
       );
       sizeAC.reset();
       sizeAC.animateTo(1);
       return;
-    }, [surfaceSize]);
-
-    print('${ref.read(compositorProvider.select((e) => e.surfacesState[id]!.toplevelDecoration))}');
+    }, [size]);
 
     return AnimatedBuilder(
-      animation: Listenable.merge([offsetAC]),
+      animation: Listenable.merge([offsetAC, sizeAC]),
       builder: (context, child) {
-        final offset = offsetTween.value.transform(offsetAC.value);
+        final offset = offsetTween.value
+            .transform(Curves.easeInOut.transform(offsetAC.value));
+        final size =
+            sizeTween.value.transform(Curves.easeInOut.transform(sizeAC.value));
+
         return Positioned(
           left: offset.dx.round() - xdgRect.left,
           top: offset.dy.round() - xdgRect.top,
-          width: surfaceSize.width,
-          height: surfaceSize.height,
-          child: child!,
-        );
-      },
-      child: Listener(
-        onPointerMove: (event) {
-          if (true) return;
-          // positions.value = {
-          //   ...positions.value,
-          //   id: positions.value[id]! + event.delta,
-          // };
-        },
-        child: Stack(
-          children: [
-            // Positioned(
-            //   left: xdgRect.left,
-            //   top: xdgRect.top,
-            //   width: surfaceSize.width,
-            //   height: surfaceSize.height,
-            //   child: ClipRect(
-            //     child: BackdropFilter(
-            //       filter: ImageFilter.blur(
-            //         sigmaX: 100,
-            //         sigmaY: 100,
-            //       ),
-            //       child: Container(color: Colors.transparent),
-            //     ),
-            //   ),
-            // ),
-            AnimatedBuilder(
-              animation: sizeAC,
-              builder: (context, child) {
-                final size = sizeTween.value.transform(sizeAC.value);
-                return Positioned(
+          width: size.width.roundToDouble(),
+          height: size.height.roundToDouble(),
+          child: Listener(
+            onPointerMove: (event) {
+              if (true) return;
+              // positions.value = {
+              //   ...positions.value,
+              //   id: positions.value[id]! + event.delta,
+              // };
+            },
+            child: Stack(
+              children: [
+                // Positioned(
+                //   left: xdgRect.left,
+                //   top: xdgRect.top,
+                //   width: surfaceSize.width,
+                //   height: surfaceSize.height,
+                //   child: ClipRect(
+                //     child: BackdropFilter(
+                //       filter: ImageFilter.blur(
+                //         sigmaX: 100,
+                //         sigmaY: 100,
+                //       ),
+                //       child: Container(color: Colors.transparent),
+                //     ),
+                //   ),
+                // ),
+                // Positioned.fill(
+                //   child: DecoratedBox(
+                //     decoration: BoxDecoration(
+                //       borderRadius: BorderRadius.circular(15),
+                //       border: Border.all(color: Colors.green),
+                //     ),
+                //   ),
+                // ),
+                Positioned(
                   width: size.width,
                   height: size.height,
-                  child: Surface(
-                    viewId: id,
-                    onEnter: (_) {
-                      ref.read(activeTopLevelProvider.notifier).state = id;
-                    },
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: Colors.lightBlue.shade700),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black,
+                          blurStyle: BlurStyle.outer,
+                          blurRadius: 10,
+                          offset: Offset.zero,
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: Surface(
+                        viewId: id,
+                        onEnter: (_) {
+                          ref.read(activeTopLevelProvider.notifier).state = id;
+                        },
+                      ),
+                    ),
                   ),
-                );
-              },
+                ),
+                // if (false)
+                //   Positioned(
+                //     left: xdgRect.left,
+                //     top: xdgRect.top,
+                //     width: xdgRect.width,
+                //     height: xdgRect.height,
+                //     child: const MouseRegion(),
+                //   ),
+              ],
             ),
-            // if (false)
-            //   Positioned(
-            //     left: xdgRect.left,
-            //     top: xdgRect.top,
-            //     width: xdgRect.width,
-            //     height: xdgRect.height,
-            //     child: const MouseRegion(),
-            //   ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

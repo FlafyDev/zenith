@@ -11,9 +11,6 @@ ZenithXdgToplevel::ZenithXdgToplevel(wlr_xdg_toplevel* xdg_toplevel,
 		maximize(true);
 	}
 
-	request_fullscreen.notify = zenith_xdg_toplevel_request_fullscreen;
-	wl_signal_add(&xdg_toplevel->events.request_fullscreen, &request_fullscreen);
-
 	set_app_id.notify = zenith_xdg_toplevel_set_app_id;
 	wl_signal_add(&xdg_toplevel->events.set_app_id, &set_app_id);
 
@@ -52,17 +49,17 @@ void ZenithXdgToplevel::focus() const {
 		}
 
 		wlr_xdg_surface* previous;
-		if (wlr_surface_is_xdg_surface(prev_surface)
-		    && (previous = wlr_xdg_surface_from_wlr_surface(prev_surface)) != nullptr) {
+		if (wlr_xdg_surface_try_from_wlr_surface(prev_surface)
+		    && (previous = wlr_xdg_surface_try_from_wlr_surface(prev_surface)) != nullptr) {
 			// FIXME: There is some weirdness going on which requires this seemingly redundant check.
 			// I think the surface might be already destroyed but in this case keyboard_state.focused_surface
 			// should be automatically set to null according to wlroots source code.
 			// It seems that it doesn't cause any more crashes but I don't think this is the right fix.
-			wlr_xdg_toplevel_set_activated(previous, false);
+			wlr_xdg_toplevel_set_activated(previous->toplevel, false);
 		}
 	}
 	// Activate the new surface.
-	wlr_xdg_toplevel_set_activated(base_xdg_surface, true);
+	wlr_xdg_toplevel_set_activated(xdg_toplevel, true);
 	/*
 	 * Tell the seat to have the keyboard enter this surface. wlroots will keep
 	 * track of this and automatically send key events to the appropriate
@@ -84,17 +81,13 @@ void ZenithXdgToplevel::focus() const {
 }
 
 void ZenithXdgToplevel::maximize(bool value) const {
-	wlr_xdg_toplevel_set_maximized(xdg_toplevel->base, value);
+	wlr_xdg_toplevel_set_maximized(xdg_toplevel, value);
 }
 
 void ZenithXdgToplevel::resize(size_t width, size_t height) const {
-	wlr_xdg_toplevel_set_size(xdg_toplevel->base, width, height);
+	wlr_xdg_toplevel_set_size(xdg_toplevel, width, height);
 }
 
-void zenith_xdg_toplevel_request_fullscreen(wl_listener* listener, void* data) {
-	auto* event = static_cast<wlr_xdg_toplevel_set_fullscreen_event*>(data);
-	wlr_xdg_toplevel_set_fullscreen(event->surface, event->fullscreen);
-}
 
 void zenith_xdg_toplevel_set_app_id(wl_listener* listener, void* data) {
 	ZenithXdgToplevel* zenith_xdg_toplevel = wl_container_of(listener, zenith_xdg_toplevel, set_app_id);

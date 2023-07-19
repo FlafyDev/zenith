@@ -8,18 +8,19 @@
 #include <unistd.h>
 #include <sys/eventfd.h>
 
-extern "C" {
-#define static
-#include <wlr/types/wlr_compositor.h>
-#include <wlr/types/wlr_data_device.h>
-#include <wlr/types/wlr_server_decoration.h>
-#include <wlr/render/allocator.h>
-#include <wlr/backend/libinput.h>
-#include <wlr/backend/drm.h>
-#include <wlr/util/log.h>
-#include <wlr/render/gles2.h>
-#include <wlr/interfaces/wlr_touch.h>
-#undef static
+
+static float read_display_scale() {
+	static const char* display_scale_str = getenv("ZENITH_SCALE");
+	if (display_scale_str == nullptr) {
+		return 1.0f;
+	}
+	try {
+		return std::stof(display_scale_str);
+	} catch (std::invalid_argument&) {
+		return 1.0f;
+	} catch (std::out_of_range&) {
+		return 1.0f;
+	}
 }
 
 ZenithServer* ZenithServer::_instance = nullptr;
@@ -30,8 +31,6 @@ ZenithServer* ZenithServer::instance() {
 	}
 	return _instance;
 }
-
-static float read_display_scale();
 
 ZenithServer::ZenithServer() {
 	main_thread_id = std::this_thread::get_id();
@@ -44,7 +43,7 @@ ZenithServer::ZenithServer() {
 		exit(1);
 	}
 
-	backend = wlr_backend_autocreate(display);
+	backend = wlr_backend_autocreate(display, &session);
 	if (backend == nullptr) {
 		wlr_log(WLR_ERROR, "Could not create wlroots backend");
 		exit(2);
@@ -67,7 +66,7 @@ ZenithServer::ZenithServer() {
 		exit(12);
 	}
 
-	compositor = wlr_compositor_create(display, renderer);
+	compositor = wlr_compositor_create(display, 6, renderer);
 	if (compositor == nullptr) {
 		wlr_log(WLR_ERROR, "Could not create wlroots compositor");
 		exit(4);
@@ -87,7 +86,7 @@ ZenithServer::ZenithServer() {
 		exit(6);
 	}
 
-	xdg_shell = wlr_xdg_shell_create(display);
+	xdg_shell = wlr_xdg_shell_create(display, 5);
 	if (xdg_shell == nullptr) {
 		wlr_log(WLR_ERROR, "Could not create wlroots XDG shell");
 		exit(7);
@@ -131,6 +130,19 @@ ZenithServer::ZenithServer() {
 		wlr_log(WLR_ERROR, "Could not create text input manager");
 		exit(-1);
 	}
+
+ //  xwayland = wlr_xwayland_create(display, compositor, true);
+	// if (xwayland == nullptr) {
+	// 	wlr_log(WLR_ERROR, "Could not create xwayland server");
+	// 	exit(-1);
+	// }
+	//
+	// xwayland_new_surface.notify = xwayland_surface_create;
+	// wl_signal_add(&xwayland->events.new_surface, &xwayland_new_surface);
+	//
+	// xwayland_ready.notify = xwayland_ready_handle;
+	// wl_signal_add(&xwayland->events.ready, &xwayland_ready);
+
 
 	// Called at the start for each available output, but also when the user plugs in a monitor.
 	new_output.notify = output_create_handle;
@@ -178,7 +190,7 @@ ZenithServer::ZenithServer() {
 void ZenithServer::run(const char* startup_command) {
 	this->startup_command = startup_command;
 
-	wlr_egl_make_current(wlr_gles2_renderer_get_egl(renderer));
+  wlr_egl_make_current(wlr_gles2_renderer_get_egl(renderer));
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -190,10 +202,7 @@ void ZenithServer::run(const char* startup_command) {
 		exit(9);
 	}
 
-	// Make sure the X11 session from the host is not visible because some programs prefer talking
-	// to the X server instead of defaulting to Wayland.
-	unsetenv("DISPLAY");
-
+  // setenv("DISPLAY", xwayland->display_name, true);
 	setenv("WAYLAND_DISPLAY", socket, true);
 	setenv("XDG_SESSION_TYPE", "wayland", true);
 	setenv("GDK_BACKEND", "wayland", true); // Force GTK apps to run on Wayland.
@@ -225,19 +234,6 @@ void ZenithServer::run(const char* startup_command) {
 	wl_display_destroy(display);
 }
 
-static float read_display_scale() {
-	static const char* display_scale_str = getenv("ZENITH_SCALE");
-	if (display_scale_str == nullptr) {
-		return 1.0f;
-	}
-	try {
-		return std::stof(display_scale_str);
-	} catch (std::invalid_argument&) {
-		return 1.0f;
-	} catch (std::out_of_range&) {
-		return 1.0f;
-	}
-}
 
 void server_new_input(wl_listener* listener, void* data) {
 	ZenithServer* server = wl_container_of(listener, server, new_input);

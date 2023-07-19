@@ -1,11 +1,7 @@
+#include "wlr-includes.hpp"
 #include <getopt.h>
 #include "server.hpp"
 
-extern "C" {
-#define static
-#include <wlr/util/log.h>
-#undef static
-}
 
 int main(int argc, char* argv[]) {
 //#ifdef DEBUG

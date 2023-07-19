@@ -1,11 +1,6 @@
 #pragma once
 
-extern "C" {
-#define static
-#include <wlr/types/wlr_text_input_v3.h>
-#include <wlr/types/wlr_xdg_shell.h>
-#undef static
-}
+#include "../wlr-includes.hpp"
 
 struct ZenithServer;
 
