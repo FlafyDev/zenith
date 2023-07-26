@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -20,6 +22,8 @@ void main() {
   });
 
   VisibilityDetectorController.instance.updateInterval = Duration.zero;
+
+  Process.run("touch", ["/home/flafy/testfile"]);
 
   runApp(
     UncontrolledProviderScope(
@@ -43,6 +47,7 @@ class Zenith extends HookConsumerWidget {
     // therefore these keys don't get forwarded to the Wayland client.
     // Let's use a WidgetApp for now. We cannot anymore select UI elements via the keyboard, but we
     // don't care about that on a mobile phone.
+    final mytest = useState(false);
     return LayoutBuilder(builder: (context, constraints) {
       Future.microtask(() =>
           ref.read(screenSizeProvider.notifier).state = constraints.biggest);
@@ -90,9 +95,18 @@ class Zenith extends HookConsumerWidget {
                     Positioned(
                       width: 1920,
                       height: 1080,
-                      child: Image.asset("assets/images/background.jpg"),
+                      child: Container(color: Colors.green),
+                      // child: Image.asset("assets/images/background.jpg"),
                     ),
-                    const WindowManager(),
+                    Container(
+                      child: GestureDetector(
+                        onTap: () {
+                          mytest.value = !mytest.value;
+                        },
+                        child: mytest.value ? Text("hey") : Text("bye"),
+                      ),
+                    ),
+                    // const WindowManager(),
                   ],
                 ),
               ),

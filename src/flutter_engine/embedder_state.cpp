@@ -8,15 +8,18 @@
 #include <unistd.h>
 #include "server.hpp"
 #include "cursor_image_mapping.hpp"
+#include "wlr/util/log.h"
 
 using namespace flutter;
 
-EmbedderState::EmbedderState(wlr_egl* flutter_gl_context, wlr_egl* flutter_resource_gl_context)
+EmbedderState::EmbedderState(wlr_egl* flutter_gl_context, wlr_egl* flutter_resource_gl_context, wlr_renderer* renderer)
 	  : message_dispatcher(&messenger),
 	    flutter_gl_context(flutter_gl_context),
 	    flutter_resource_gl_context(flutter_resource_gl_context),
 	    event_loop(wl_event_loop_create()) {
 
+  // flutter_renderer = wlr_gles2_renderer_create_with_drm_fd(wlr_renderer_get_drm_fd(renderer));
+  flutter_renderer = wlr_gles2_renderer_create(flutter_gl_context);
 	messenger.SetMessageDispatcher(&message_dispatcher);
 }
 
@@ -61,13 +64,13 @@ void EmbedderState::configure_and_run_engine() {
 	 */
 	FlutterRendererConfig config = {};
 	config.type = kOpenGL;
-	config.open_gl.struct_size = sizeof(FlutterOpenGLRendererConfig);
+	config.open_gl.struct_size = sizeof(config.open_gl);
 	config.open_gl.make_current = flutter_make_current;
 	config.open_gl.clear_current = flutter_clear_current;
 	config.open_gl.present_with_info = flutter_present;
 	config.open_gl.fbo_callback = flutter_fbo_callback;
-	config.open_gl.gl_external_texture_frame_callback = flutter_gl_external_texture_frame_callback;
-	config.open_gl.make_resource_current = flutter_make_resource_current;
+	// config.open_gl.gl_external_texture_frame_callback = flutter_gl_external_texture_frame_callback;
+	// config.open_gl.make_resource_current = flutter_make_resource_current;
 	config.open_gl.fbo_reset_after_present = true;
 	config.open_gl.surface_transformation = flutter_surface_transformation;
 	config.open_gl.populate_existing_damage = flutter_populate_existing_damage;

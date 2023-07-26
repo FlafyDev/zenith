@@ -14,16 +14,18 @@ static const EGLint config_attribs[] = {
 	  EGL_NONE,
 };
 
+/// TODO: make some attribs conditional.
 static const EGLint context_attribs[] = {
 	  EGL_CONTEXT_CLIENT_VERSION, 2,
-	  EGL_CONTEXT_PRIORITY_LEVEL_IMG, EGL_CONTEXT_PRIORITY_HIGH_IMG,
+    EGL_CONTEXT_PRIORITY_LEVEL_IMG, EGL_CONTEXT_PRIORITY_HIGH_IMG,
+    EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT, EGL_LOSE_CONTEXT_ON_RESET_EXT,
 	  EGL_NONE,
 };
 
-struct wlr_egl* create_shared_egl_context(struct wlr_egl* egl) {
-	struct wlr_egl* shared_egl;
 
+struct wlr_egl* create_shared_egl_context(struct wlr_egl* egl) {
 	EGLConfig egl_config;
+
 	EGLint matched = 0;
 	if (!eglChooseConfig(wlr_egl_get_display(egl), config_attribs, &egl_config, 1, &matched)) {
 		std::cerr << "eglChooseConfig failed" << std::endl;
@@ -34,18 +36,14 @@ struct wlr_egl* create_shared_egl_context(struct wlr_egl* egl) {
 		return nullptr;
 	}
 
+	// EGLContext shared_egl_context = eglCreateContext(wlr_egl_get_display(egl), egl_config, eglGetCurrentContext(), context_attribs);
+
+  /// TODO: remove egl_config?
 	EGLContext shared_egl_context = eglCreateContext(wlr_egl_get_display(egl), egl_config, wlr_egl_get_context(egl), context_attribs);
 	if (shared_egl_context == EGL_NO_CONTEXT) {
 		std::cerr << "Failed to create EGL context" << std::endl;
 		return nullptr;
 	}
 
-	shared_egl = new(std::nothrow) wlr_egl();
-	if (shared_egl == nullptr) {
-		return nullptr;
-	}
-
-	memcpy(shared_egl, egl, sizeof(struct wlr_egl));
-	shared_egl->context = shared_egl_context;
-	return shared_egl;
+  return wlr_egl_create_with_context(wlr_egl_get_display(egl), shared_egl_context);
 }

@@ -42,6 +42,7 @@ ZenithServer::ZenithServer() {
 		wlr_log(WLR_ERROR, "Could not create Wayland display");
 		exit(1);
 	}
+	auto* event_loop = wl_display_get_event_loop(display);
 
 	backend = wlr_backend_autocreate(display, &session);
 	if (backend == nullptr) {
@@ -50,10 +51,17 @@ ZenithServer::ZenithServer() {
 	}
 
 	renderer = wlr_renderer_autocreate(backend);
-	if (!wlr_renderer_init_wl_display(renderer, display)) {
+	if (renderer == nullptr) {
 		wlr_log(WLR_ERROR, "Could not initialize wlroots renderer");
 		exit(3);
 	}
+	if (!wlr_renderer_init_wl_display(renderer, display)) {
+		wlr_log(WLR_ERROR, "Could not initialize wlroots renderer");
+		exit(4);
+	}
+
+  ;
+  // wlr_renderer_init_wl_shm(renderer, display);
 
 	/*
 	 * Auto-creates an allocator for us.
@@ -71,6 +79,13 @@ ZenithServer::ZenithServer() {
 		wlr_log(WLR_ERROR, "Could not create wlroots compositor");
 		exit(4);
 	}
+
+  subcompositor = wlr_subcompositor_create(display);
+  if (subcompositor == nullptr) {
+		wlr_log(WLR_ERROR, "Could not create wlroots subcompositor");
+		exit(4);
+  }
+
 //	surface_destroyed.notify = server_surface_destroyed;
 //	new_surface.notify = server_new_surface;
 //	wl_signal_add(&compositor->events.new_surface, &new_surface);
@@ -180,7 +195,6 @@ ZenithServer::ZenithServer() {
 		return (int) server->callable_queue.execute();
 	};
 
-	auto* event_loop = wl_display_get_event_loop(display);
 	wl_event_loop_add_fd(event_loop, callable_queue.get_fd(), WL_EVENT_READABLE, callable_queue_function, nullptr);
 
 	load_egl_extensions();
@@ -211,10 +225,18 @@ void ZenithServer::run(const char* startup_command) {
 	wlr_egl* main_egl = wlr_gles2_renderer_get_egl(renderer);
 
 	// Create 2 OpenGL shared contexts for rendering operations.
+	// wlr_egl* flutter_gl_context = main_egl;
+	// wlr_egl* flutter_resource_gl_context = main_egl;
 	wlr_egl* flutter_gl_context = create_shared_egl_context(main_egl);
+  if (flutter_gl_context == nullptr) {
+    exit(2);
+  }
 	wlr_egl* flutter_resource_gl_context = create_shared_egl_context(main_egl);
+  if (flutter_resource_gl_context == nullptr) {
+    exit(2);
+  }
 
-	embedder_state = std::make_unique<EmbedderState>(flutter_gl_context, flutter_resource_gl_context);
+	embedder_state = std::make_unique<EmbedderState>(flutter_gl_context, flutter_resource_gl_context, renderer);
 
 	// Run the engine.
 	embedder_state->run_engine();

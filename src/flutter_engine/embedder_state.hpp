@@ -17,7 +17,7 @@
 struct ZenithServer;
 
 struct EmbedderState {
-	EmbedderState(wlr_egl* flutter_gl_context, wlr_egl* flutter_resource_gl_context);
+	EmbedderState(wlr_egl* flutter_gl_context, wlr_egl* flutter_resource_gl_context, wlr_renderer* renderer);
 
 	void run_engine();
 
@@ -73,6 +73,7 @@ struct EmbedderState {
 	// Flutter needs separate OpenGL contexts to render asynchronously.
 	wlr_egl* flutter_gl_context = nullptr;
 	wlr_egl* flutter_resource_gl_context = nullptr;
+	wlr_renderer* flutter_renderer = nullptr;
 
 	// Keeps alive surface buffers, even after the surfaces are destroyed.
 	// This allows Flutter to play closing animations on surfaces that don't exist anymore.

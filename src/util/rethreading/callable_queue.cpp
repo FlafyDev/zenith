@@ -1,4 +1,5 @@
 #include "callable_queue.hpp"
+#include "wlr-includes.hpp"
 
 int CallableQueue::get_fd() const {
 	return fd;

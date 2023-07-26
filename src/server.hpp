@@ -45,6 +45,7 @@ public:
 	wlr_allocator* allocator;
   wlr_session* session;
 	wlr_compositor* compositor;
+	wlr_subcompositor* subcompositor;
 	wlr_xdg_shell* xdg_shell;
   // wlr_xwayland* xwayland;
 	wlr_text_input_manager_v3* text_input_manager;

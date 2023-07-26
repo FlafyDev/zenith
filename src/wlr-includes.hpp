@@ -8,7 +8,6 @@
 #include <time.h>
 #include <unistd.h>
 #include <wayland-server-core.h>
-#include <mutex>
 #include <thread>
 #include <filesystem>
 #include <climits>
@@ -45,6 +44,7 @@ extern "C" {
 #include <wlr/types/wlr_idle.h>
 #include <wlr/types/wlr_input_device.h>
 #include <wlr/types/wlr_keyboard.h>
+#include <wlr/render/interface.h>
 // #include <wlr/types/wlr_layer_shell_v1.h>
 #include <wlr/types/wlr_matrix.h>
 #include <wlr/types/wlr_output.h>
@@ -73,6 +73,7 @@ extern "C" {
 #include <wlr/types/wlr_idle_inhibit_v1.h>
 #include <wlr/util/log.h>
 #include <wlr/util/region.h>
+#include <wlr/render/swapchain.h>
 // #include <wlr/types/wlr_tablet_pad.h>
 // #include <wlr/types/wlr_tablet_tool.h>
 // #include <wlr/types/wlr_tablet_v2.h>
@@ -80,6 +81,7 @@ extern "C" {
 #include <wlr/render/egl.h>
 // #include <EGL/egl.h>
 #include <wlr/render/gles2.h>
+#include <wlr/render/allocator.h>
 #include <wlr/render/wlr_texture.h>
 // #include <wlr/types/wlr_pointer_constraints_v1.h>
 #include <wlr/types/wlr_relative_pointer_v1.h>
