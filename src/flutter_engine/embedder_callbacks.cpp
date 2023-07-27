@@ -63,7 +63,10 @@ uint32_t flutter_fbo_callback(void* userdata) {
 	ZenithServer* server = ZenithServer::instance();
 
 
-	struct wlr_buffer *buffer = swapchain_acquire_oldest(server->output->swap_chain.get());
+	struct wlr_buffer *buffer = swapchain_acquire_by_age(server->output->swap_chain.get(), 0);
+  if (buffer == nullptr) {
+    buffer = swapchain_acquire_oldest(server->output->swap_chain.get());
+  }
   wlr_log(WLR_ERROR, "fbo: %p", buffer);
   if (buffer == nullptr) {
     return false;
@@ -85,9 +88,9 @@ bool flutter_present(void* userdata, const FlutterPresentInfo* present_info) {
 	ZenithServer* server = ZenithServer::instance();
 
 	// struct wlr_buffer *buffer = wlr_swapchain_acquire(server->output->swap_chain.get(), NULL);
-  wlr_buffer* buffer = swapchain_acquire_by_age(server->output->swap_chain.get(), 2);
+	struct wlr_buffer *buffer = swapchain_acquire_by_age(server->output->swap_chain.get(), 0);
   if (buffer == nullptr) {
-    buffer = swapchain_acquire_by_age(server->output->swap_chain.get(), 0);
+    buffer = swapchain_acquire_oldest(server->output->swap_chain.get());
   }
   if (buffer == nullptr) {
 		return false;

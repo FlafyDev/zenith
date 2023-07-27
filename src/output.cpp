@@ -87,7 +87,7 @@ void output_commit(wl_listener* listener, void* data) {
 	auto* server = ZenithServer::instance();
 	wlr_output* wlr_output = output->wlr_output;
   const auto event = (wlr_output_event_commit*)data;
-  wlr_log(WLR_ERROR, "commit %i", event->committed);
+  // wlr_log(WLR_ERROR, "commit %i", event->committed);
   // if (event->committed & (WLR_OUTPUT_STATE_ENABLED)) {
   // }
   //   output->recreate_swapchain();
@@ -135,7 +135,7 @@ static wlr_buffer* swapchain_acquire_by_age(wlr_swapchain* swapchain, int age) {
   wlr_swapchain_slot* chosen_slot = nullptr;
 	for (size_t i = 0; i < WLR_SWAPCHAIN_CAP; i++) {
 		struct wlr_swapchain_slot *slot = &swapchain->slots[i];
-    wlr_log(WLR_ERROR, "swapchain buffer #%i %p: %i", i, slot->buffer, slot->age);
+    // wlr_log(WLR_ERROR, "swapchain buffer #%i %p: %i", i, slot->buffer, slot->age);
     if (slot->age == age) {
       chosen_slot = slot;
     }
@@ -170,7 +170,7 @@ void output_frame(wl_listener* listener, void* data) {
 		}, &now);
 	}
 
-  wlr_buffer* buffer;
+  wlr_buffer* buffer = nullptr;
 
   if (output->swap_chain.get() == nullptr) {
     output->recreate_swapchain();
@@ -178,11 +178,14 @@ void output_frame(wl_listener* listener, void* data) {
   }
 
   // wlr_output_attach_render(wlr_output, nullptr);
-  // buffer = swapchain_acquire_by_age(output->swap_chain.get(), 1);
-  buffer = wlr_swapchain_acquire(output->swap_chain.get(), NULL);
-  wlr_log(WLR_ERROR, "FRAME, %p", buffer);
+  buffer = swapchain_acquire_by_age(output->swap_chain.get(), 2);
+  // buffer = wlr_swapchain_acquire(output->swap_chain.get(), NULL);
+  // wlr_log(WLR_ERROR, "FRAME, %p", buffer);
 
-  if (buffer == nullptr) goto error;
+  if (buffer == nullptr) {
+    wlr_output_commit(wlr_output);
+    goto error;
+  }
 
 
   // wl_event_source_timer_update(output->schedule_frame_timer, 16);
@@ -332,10 +335,15 @@ void ZenithOutput::recreate_swapchain() {
   wlr_log(WLR_ERROR, "new swapchain success: %B", success);
   wlr_log(WLR_ERROR, "new swapchain: %p", swapchain_ptr);
   wlr_log(WLR_ERROR, "output swapchain: %p", wlr_output->swapchain);
-  // wlr_buffer* buffer1 = wlr_swapchain_acquire(wlr_output->swapchain, NULL);
-  // wlr_buffer* buffer2 = wlr_swapchain_acquire(wlr_output->swapchain, NULL);
-  // wlr_buffer_unlock(buffer1);
-  // wlr_buffer_unlock(buffer2);
+  wlr_buffer* buffer1 = wlr_swapchain_acquire(swapchain_ptr, NULL);
+  wlr_buffer* buffer2 = wlr_swapchain_acquire(swapchain_ptr, NULL);
+  wlr_buffer* buffer3 = wlr_swapchain_acquire(swapchain_ptr, NULL);
+  wlr_buffer* buffer4 = wlr_swapchain_acquire(swapchain_ptr, NULL);
+
+  wlr_buffer_unlock(buffer1);
+  wlr_buffer_unlock(buffer2);
+  wlr_buffer_unlock(buffer3);
+  wlr_buffer_unlock(buffer4);
 
   swap_chain = std::shared_ptr<struct wlr_swapchain>(swapchain_ptr);
 }
