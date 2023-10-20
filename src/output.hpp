@@ -9,7 +9,7 @@
 #include "flutter_engine/embedder_state.hpp"
 #include "util/wlr/wlr_helpers.hpp"
 #include <GLES2/gl2.h>
-
+#include <swap_chain.hpp>
 
 struct ZenithServer;
 
@@ -25,7 +25,7 @@ struct ZenithOutput {
 	wl_listener destroy{};
 	wl_event_source* schedule_frame_timer;
 
-	std::shared_ptr<wlr_swapchain> swap_chain;
+	std::shared_ptr<SwapChain<wlr_buffer>> swap_chain;
 
   void recreate_swapchain();
 	bool enable();

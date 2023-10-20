@@ -100,33 +100,33 @@ class Zenith extends HookConsumerWidget {
                       child: Container(color: Colors.green),
                       // child: Image.asset("assets/images/background.jpg"),
                     ),
-                    // const Positioned.fill(
-                    //   child: WindowManager(),
-                    // ),
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Container(
-                        color: Colors.red,
-                        width: 200,
-                        height: 200,
-                        child: GestureDetector(
-                          onTap: () {
-                            mytest.value = !mytest.value;
-                          },
-                          child: Center(
-                            child: mytest.value
-                                ? const Text(
-                                    'AAAAAAAAAAAAAAAA',
-                                    style: TextStyle(fontSize: 24),
-                                  )
-                                : const Text(
-                                    'BBBBBBBBB',
-                                    style: TextStyle(fontSize: 24),
-                                  ),
-                          ),
-                        ),
-                      ),
+                    const Positioned.fill(
+                      child: WindowManager(),
                     ),
+                    // Align(
+                    //   alignment: Alignment.topLeft,
+                    //   child: GestureDetector(
+                    //     onTap: () {
+                    //       mytest.value = !mytest.value;
+                    //     },
+                    //     child: Container(
+                    //       color: Colors.red,
+                    //       width: 100,
+                    //       height: 100,
+                    //       child: Center(
+                    //         child: mytest.value
+                    //             ? const Text(
+                    //                 'AAAAAAAAAAAAAAAA',
+                    //                 style: TextStyle(fontSize: 24),
+                    //               )
+                    //             : const Text(
+                    //                 'BBBBBBBBB',
+                    //                 style: TextStyle(fontSize: 24),
+                    //               ),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
                     // const WindowManager(),
                   ],
                 ),

@@ -69,7 +69,7 @@ void EmbedderState::configure_and_run_engine() {
 	config.open_gl.clear_current = flutter_clear_current;
 	config.open_gl.present_with_info = flutter_present;
 	config.open_gl.fbo_callback = flutter_fbo_callback;
-	// config.open_gl.gl_external_texture_frame_callback = flutter_gl_external_texture_frame_callback;
+	config.open_gl.gl_external_texture_frame_callback = flutter_gl_external_texture_frame_callback;
 	// config.open_gl.make_resource_current = flutter_make_resource_current;
 	config.open_gl.fbo_reset_after_present = true;
 	config.open_gl.surface_transformation = flutter_surface_transformation;

@@ -178,7 +178,10 @@ void output_frame(wl_listener* listener, void* data) {
   }
 
   // wlr_output_attach_render(wlr_output, nullptr);
-  buffer = swapchain_acquire_by_age(output->swap_chain.get(), 2);
+  // TTODO
+  //
+	buffer = output->swap_chain->start_read();
+  // buffer = swapchain_acquire_by_age(output->swap_chain.get(), 2);
   // buffer = wlr_swapchain_acquire(output->swap_chain.get(), NULL);
   // wlr_log(WLR_ERROR, "FRAME, %p", buffer);
 
@@ -193,15 +196,13 @@ void output_frame(wl_listener* listener, void* data) {
 
   if (!wlr_output_commit(wlr_output)) goto error;
 
-  wlr_buffer_unlock(buffer);
+  // wlr_buffer_unlock(buffer);
 
   return;
 
   error:
     wlr_log(WLR_ERROR, "Timing next frame.");
 		wl_event_source_timer_update(output->schedule_frame_timer, 1);
-
-
 }
 
 // void mode_changed_event(wl_listener* listener, void* data) {
@@ -330,20 +331,44 @@ bool ZenithOutput::disable() const {
 
 
 void ZenithOutput::recreate_swapchain() {
+
   struct wlr_swapchain* swapchain_ptr = nullptr;
   bool success = wlr_output_configure_primary_swapchain(wlr_output, NULL, &swapchain_ptr);
-  wlr_log(WLR_ERROR, "new swapchain success: %B", success);
-  wlr_log(WLR_ERROR, "new swapchain: %p", swapchain_ptr);
-  wlr_log(WLR_ERROR, "output swapchain: %p", wlr_output->swapchain);
-  wlr_buffer* buffer1 = wlr_swapchain_acquire(swapchain_ptr, NULL);
-  wlr_buffer* buffer2 = wlr_swapchain_acquire(swapchain_ptr, NULL);
-  wlr_buffer* buffer3 = wlr_swapchain_acquire(swapchain_ptr, NULL);
-  wlr_buffer* buffer4 = wlr_swapchain_acquire(swapchain_ptr, NULL);
+  wlr_log(WLR_ERROR, "new swapchain success: %d", success);
 
-  wlr_buffer_unlock(buffer1);
-  wlr_buffer_unlock(buffer2);
-  wlr_buffer_unlock(buffer3);
-  wlr_buffer_unlock(buffer4);
+	std::array<std::shared_ptr<wlr_buffer>, 4> buffers = {};
 
-  swap_chain = std::shared_ptr<struct wlr_swapchain>(swapchain_ptr);
+	for (auto& buffer: buffers) {
+		buffer = scoped_wlr_buffer(wlr_swapchain_acquire(swapchain_ptr, NULL));
+	}
+
+	swap_chain = std::make_unique<SwapChain<wlr_buffer>>(buffers);
+
+	//
+	//
+	//
+	//
+	// wlr_egl_make_current(wlr_gles2_renderer_get_egl(server->renderer));
+	//
+	// std::array<std::shared_ptr<wlr_gles2_buffer>, 4> buffers = {};
+	//
+	// wlr_drm_format* drm_format = get_output_format(wlr_output);
+	// for (auto& buffer: buffers) {
+	// 	wlr_buffer* buf = wlr_allocator_create_buffer(server->allocator, wlr_output->width, wlr_output->height,
+	// 	                                              drm_format);
+	// 	assert(wlr_renderer_is_gles2(server->renderer));
+	// 	auto* gles2_renderer = (struct wlr_gles2_renderer*) server->renderer;
+	// 	wlr_gles2_buffer* gles2_buffer = create_buffer(gles2_renderer, buf);
+	// 	buffer = scoped_wlr_gles2_buffer(gles2_buffer);
+	// }
+	//
+	// return std::make_unique<SwapChain<wlr_gles2_buffer>>(buffers);
+
+  //
+  // wlr_buffer_unlock(buffer1);
+  // wlr_buffer_unlock(buffer2);
+  // wlr_buffer_unlock(buffer3);
+  // wlr_buffer_unlock(buffer4);
+  //
+  // swap_chain = std::shared_ptr<struct wlr_swapchain>(swapchain_ptr);
 }

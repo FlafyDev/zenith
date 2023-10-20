@@ -150,7 +150,7 @@ class WindowManager extends HookConsumerWidget {
               onPressed: () async {
                 Process.run('foot', []);
 
-                await Future.delayed(Duration(seconds: 1));
+                await Future.delayed(Duration(milliseconds: 200));
 
                 final viewId = ref.read(compositorProvider
                     .select((e) => e.surfacesState.keys.lastWhere((element) => e.surfacesState[element]?.toplevelAppId != null)));
@@ -164,9 +164,9 @@ class WindowManager extends HookConsumerWidget {
                   ...sizes.value,
                   viewId: Size(100, 300)
                 };
-                // await ref
-                //     .read(compositorProvider.notifier)
-                //     .resizeWindow(viewId, 100, 300);
+                // // await ref
+                // //     .read(compositorProvider.notifier)
+                // //     .resizeWindow(viewId, 100, 300);
                 await Future.delayed(Duration(seconds: 1));
                 positions.value = {
                   ...positions.value,
@@ -180,7 +180,7 @@ class WindowManager extends HookConsumerWidget {
                 //     .read(compositorProvider.notifier)
                 //     .resizeWindow(viewId, 200, 200);
               },
-              child: Text('Run nautilus'),
+              child: const Text('Open window'),
             ),
           ),
         )
@@ -260,67 +260,28 @@ class _TopLevel extends HookConsumerWidget {
               //   id: positions.value[id]! + event.delta,
               // };
             },
-            child: Stack(
-              children: [
-                // Positioned(
-                //   left: xdgRect.left,
-                //   top: xdgRect.top,
-                //   width: surfaceSize.width,
-                //   height: surfaceSize.height,
-                //   child: ClipRect(
-                //     child: BackdropFilter(
-                //       filter: ImageFilter.blur(
-                //         sigmaX: 100,
-                //         sigmaY: 100,
-                //       ),
-                //       child: Container(color: Colors.transparent),
-                //     ),
-                //   ),
-                // ),
-                // Positioned.fill(
-                //   child: DecoratedBox(
-                //     decoration: BoxDecoration(
-                //       borderRadius: BorderRadius.circular(15),
-                //       border: Border.all(color: Colors.green),
-                //     ),
-                //   ),
-                // ),
-                Positioned(
-                  width: size.width,
-                  height: size.height,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(color: Colors.lightBlue.shade700),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black,
-                          blurStyle: BlurStyle.outer,
-                          blurRadius: 10,
-                          offset: Offset.zero,
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-                      child: Surface(
-                        viewId: id,
-                        onEnter: (_) {
-                          ref.read(activeTopLevelProvider.notifier).state = id;
-                        },
-                      ),
-                    ),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: Colors.lightBlue.shade700),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black,
+                    blurStyle: BlurStyle.outer,
+                    blurRadius: 10,
+                    offset: Offset.zero,
                   ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: Surface(
+                  viewId: id,
+                  onEnter: (_) {
+                    ref.read(activeTopLevelProvider.notifier).state = id;
+                  },
                 ),
-                // if (false)
-                //   Positioned(
-                //     left: xdgRect.left,
-                //     top: xdgRect.top,
-                //     width: xdgRect.width,
-                //     height: xdgRect.height,
-                //     child: const MouseRegion(),
-                //   ),
-              ],
+              ),
             ),
           ),
         );
