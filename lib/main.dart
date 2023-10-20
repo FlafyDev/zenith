@@ -23,7 +23,9 @@ void main() {
 
   VisibilityDetectorController.instance.updateInterval = Duration.zero;
 
-  Process.run("touch", ["/home/flafy/testfile"]);
+  Process.run("touch", [
+    "/home/flafy/testfile"
+  ]);
 
   runApp(
     UncontrolledProviderScope(
@@ -48,9 +50,9 @@ class Zenith extends HookConsumerWidget {
     // Let's use a WidgetApp for now. We cannot anymore select UI elements via the keyboard, but we
     // don't care about that on a mobile phone.
     final mytest = useState(false);
+
     return LayoutBuilder(builder: (context, constraints) {
-      Future.microtask(() =>
-          ref.read(screenSizeProvider.notifier).state = constraints.biggest);
+      Future.microtask(() => ref.read(screenSizeProvider.notifier).state = constraints.biggest);
       return WidgetsApp(
         color: Colors.blue,
         builder: (BuildContext context, Widget? child) {
@@ -98,12 +100,31 @@ class Zenith extends HookConsumerWidget {
                       child: Container(color: Colors.green),
                       // child: Image.asset("assets/images/background.jpg"),
                     ),
-                    Container(
-                      child: GestureDetector(
-                        onTap: () {
-                          mytest.value = !mytest.value;
-                        },
-                        child: mytest.value ? Text("hey") : Text("bye"),
+                    // const Positioned.fill(
+                    //   child: WindowManager(),
+                    // ),
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Container(
+                        color: Colors.red,
+                        width: 200,
+                        height: 200,
+                        child: GestureDetector(
+                          onTap: () {
+                            mytest.value = !mytest.value;
+                          },
+                          child: Center(
+                            child: mytest.value
+                                ? const Text(
+                                    'AAAAAAAAAAAAAAAA',
+                                    style: TextStyle(fontSize: 24),
+                                  )
+                                : const Text(
+                                    'BBBBBBBBB',
+                                    style: TextStyle(fontSize: 24),
+                                  ),
+                          ),
+                        ),
                       ),
                     ),
                     // const WindowManager(),

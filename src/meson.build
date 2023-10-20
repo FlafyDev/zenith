@@ -43,6 +43,7 @@ executable('zenith', src,
     dependency('egl'),
     dependency('pam'),
     dependency('libdrm'),
+    dependency('fontconfig'),
     dependency('gl', 'opengl'),
   ],
 )

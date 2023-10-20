@@ -3,6 +3,7 @@
 
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:NixOS/nixpkgs/ac7c3b5a19a11eda44165053bf8178a2d90f70ec";
     wlroots = {
       url = "gitlab:wlroots/wlroots?host=gitlab.freedesktop.org";
       flake = false;
@@ -14,7 +15,7 @@
     flake-utils,
     nixpkgs,
     ...
-  }@inputs:
+  } @ inputs:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {
         inherit system;
@@ -51,6 +52,9 @@
         inherit (pkgs) flutter-elinux-engine;
       };
       devShell = pkgs.mkShell {
+        env.LD_LIBRARY_PATH = "$LD_LIBRARY_PATH:${pkgs.lib.makeLibraryPath (with pkgs; [
+          fontconfig
+        ])}";
         nativeBuildInputs = with pkgs; [
           meson
           pkg-config
@@ -58,7 +62,7 @@
         buildInputs = with pkgs; [
           ninja
           # (builtins.elemAt hyprland.buildInputs 12)
-          wlroots-hyprland   
+          wlroots-hyprland
           # wlroots
           libglvnd
           libepoxy
@@ -75,6 +79,7 @@
           (flutter.override {
             supportsAndroid = false;
           })
+          fontconfig
         ];
       };
     })

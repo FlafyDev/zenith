@@ -39,7 +39,7 @@
           "elinux-${arch}-profile"
           "elinux-${arch}-release"
         ]));
-    outputHash = "sha256-IwiisHS6dpfJjgO0WxBawDK1BDhU/Nx8Z0QMYczdnY0=";
+    outputHash = "sha256-yT9NkuV++7pVanFQk05eDCZjamgq4yX6t61vRWKSbN8=";
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };
