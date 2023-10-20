@@ -58,12 +58,13 @@
         nativeBuildInputs = with pkgs; [
           meson
           pkg-config
+          (flutter.override {
+            supportsAndroid = false;
+          })
+          ninja
         ];
         buildInputs = with pkgs; [
-          ninja
-          # (builtins.elemAt hyprland.buildInputs 12)
           wlroots-hyprland
-          # wlroots
           libglvnd
           libepoxy
           xorg.xcbutilwm
@@ -76,9 +77,6 @@
           cairo
           libdrm
           flutter-elinux-engine
-          (flutter.override {
-            supportsAndroid = false;
-          })
           fontconfig
         ];
       };
