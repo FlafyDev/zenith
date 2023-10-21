@@ -56,11 +56,8 @@ void zenith_xdg_surface_unmap(wl_listener* listener, void* data) {
 }
 
 void zenith_xdg_surface_destroy(wl_listener* listener, void* data) {
-	auto* xdg_surface = static_cast<wlr_xdg_surface*>(data);
-	auto zenith_xdg_surface = static_cast<ZenithXdgSurface*>(xdg_surface->data);
+	ZenithXdgSurface* zenith_xdg_surface = wl_container_of(listener, zenith_xdg_surface, destroy);
 	size_t id = zenith_xdg_surface->zenith_surface->id;
-
-//	ZenithXdgSurface* zenith_xdg_surface = wl_container_of(listener, zenith_xdg_surface, destroy);
 	auto* server = ZenithServer::instance();
 
 	if (zenith_xdg_surface->xdg_surface->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
